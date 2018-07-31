@@ -7,6 +7,9 @@ from gym import error, spaces
 from gym import utils
 import random
 import math
+import cv2
+import base64
+from elasticsearch import Elasticsearch,client ,helpers
 from gym.utils import seeding
 
 
@@ -20,18 +23,17 @@ class ENVenum(Enum):
     START=2,
     END=4
 
-
+es = Elasticsearch()
 class ClassEnv(gym.Env, utils.EzPickle):
     metadata = {'render.modes': ['human']}
 
     def __init__(self,image=None,gt_boxes=None,anchor_boxes = None,image_size=(800,800)):
         self.viewer = None
-        self.image = image
-        self.gt_boxes = gt_boxes
+        self.image ,self.gt_boxes ,self.anchor_boxes = get_input()
         self.image_size = image_size
         self.pred_boxes = Box(cx = random.randint(0,self.image_size[0]),\
             cy=random.randint(0,self.image_size[1]),cw = random.randint(0,10),ch=random.randint(0,10),label=0)
-        self.anchor_boxes = anchor_boxes
+        
         self.num_anchors = len(self.anchor_boxes)
         self.final_max_steps = 200
         self.max_steps = 40
@@ -53,7 +55,7 @@ class ClassEnv(gym.Env, utils.EzPickle):
         return 0
         
 
-    def _configure_environment(self,image=None,gt_boxes=None,image_size=(800,800)):
+    def _configure_environment(self,image_size=(800,800)):
         """
         Overwritten with new image environment
         """
@@ -62,8 +64,7 @@ class ClassEnv(gym.Env, utils.EzPickle):
             spaces.Discrete(self.num_anchors),
             spaces.Box(low=np.array([-self.image_size[0],-self.image_size[1],0,0]),high=np.array([self.image_size[0],self.image_size[1],2,2]),\
                        dtype=np.float32)))
-        self.image = image
-        self.gt_boxes = gt_boxes
+        self.image ,self.gt_boxes ,self.anchor_boxes = get_input()
         self.p_b = random.randint(0,self.num_anchors)
         
 
@@ -151,6 +152,25 @@ class ClassEnv(gym.Env, utils.EzPickle):
 #        else:
 #            if self.viewer is None:
 #                self._start_viewer()
+def get_input():
+    res = es.get(index="open_image", doc_type='train', id=random.randint(0,10000))
+    reconstructed = base64.b64decode(res['_source']['image'])
+    img = cv2.imdecode(np.fromstring(reconstructed,dtype=np.uint8),1)
+    img = cv2.resize(img,(800,800))
+    xmin = res['_source']['xmin']
+    ymin = res['_source']['ymin']
+    xmax = res['_source']['xmax']
+    ymax = res['_source']['ymax']
+    label = res['_source']['label']
+    gt_boxes = []
+    for ind, i in enumerate(label):
+        if i < 0:
+            break
+        box = Box(x0=xmin[ind]*800,y0=ymin[ind]*800,x1=xmax[ind]*800,y1=ymax[ind]*800)
+        gt_boxes.append(box)
+    return img, gt_boxes , np.array([[1,2],[2,1],[1,3],[3,1]])
+    
+    
 
 def sigmoid(x):
     return 1/(1+math.exp(-x))
