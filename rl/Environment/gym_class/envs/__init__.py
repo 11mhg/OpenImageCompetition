@@ -1,1 +1,0 @@
-from gym_class.envs.class_env import ClassEnv
