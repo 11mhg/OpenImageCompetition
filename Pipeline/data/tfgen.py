@@ -22,10 +22,17 @@ def _get_es_batch(ind = 'open_image', d_type = 'train'):
     while(scroll_size>0):
         page = es.scroll(scroll_id = sid, scroll = '3m')
         sid = page['_scroll_id']
-        scroll_size = len(page['hits']['hits'])
+        results = page['hits']['hits']
+        scroll_size = len(results)
+        image = [base64.b64decode(i['_source']['image']) for i in results]
+        
+        #label = [i['_source']['label'] for i in results]
+        #masks = [i['_source']['masks'] for i in results]
 
-        image = [base64.b64decode(i['_source']['image']) for i in page['hits']['hits']]
-        #label = [i['_source']['label'] for i in page['hits']['hits']]
+        #xmin = [i['_source']['xmin'] for i in results]
+        #ymin = [i['_source']['ymin'] for i in results]
+        #xmax = [i['_source']['xmax'] for i in results]
+        #ymax = [i['_source']['ymax'] for i in results]
         yield image
 
 # make this into image and resize
