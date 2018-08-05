@@ -130,8 +130,8 @@ class PreProcessData:
                 e = int(np.floor(m_ymax[i]))
                 hold_mask[d:e,b:c] = 1
                 masks[:,:,i] = hold_mask[:,:]
-
-            actions.append({"_index":"open_image", "_type":'train','_id':self.doc_count,
+            self.doc_count+=1
+            actions.append({"_index":"open_image", "_type":'train',
                     'image': str(image),
                     'label' : label,
                     'xmin':xmin,
@@ -145,11 +145,10 @@ class PreProcessData:
                 try:
                     helpers.bulk(es, actions,request_timeout=100000)
                 except elasticsearch.ElasticsearchException as es1:
+                    print "ERRRRRRORRRRR"
                     print es1
                 actions =[]
-            self.doc_count+=1
-
-        helpers.bulk(es, actions,request_timeout=100000)
+        print self.doc_count
         print "Index Information"
         print es.cat.indices(v='true')
 
