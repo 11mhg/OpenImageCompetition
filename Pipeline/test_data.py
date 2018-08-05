@@ -43,7 +43,7 @@ class PreProcessData:
         self.labels = None
         self.image_size=image_size
         self.doc_count = 0
-        self.bulk_ind = 500
+        self.bulk_ind = 100
         with open(classes_text) as f:
             self.class_names = []
             for lines in f.readlines():
@@ -80,7 +80,7 @@ class PreProcessData:
                 box = Box(x0=xmin, y0 = ymin, x1=xmax, y1=ymax,label=label)
 
                 dict_annot[filename].append(box)
-                if len(dict_annot) == self.bulk_ind:
+                if len(dict_annot) == self.bulk_ind+1:
                     # save the last entry since it doesnt have all the boxes yet
                     od = OrderedDict(dict_annot)
                     temp = od.popitem()
@@ -138,12 +138,6 @@ class PreProcessData:
                     'mask':str(base64.b64encode(masks.tobytes()))
                 })
      
-            try:
-                helpers.bulk(es, actions,request_timeout=100000)
-                actions = []
-            except elasticsearch.ElasticsearchException as es1:
-                print "ERRRRRRORRRRR"
-                print es1
         try:
             helpers.bulk(es, actions, request_timeout = 100000)
         except elasticsearch.ElasticsearchException as es1:
