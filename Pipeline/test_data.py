@@ -5,9 +5,12 @@ import tensorflow as tf
 import os
 import math
 import threading
+import Queue
+import sys
 import cv2
 import base64
 import elasticsearch
+
 
 from data.bbox import Box
 from tqdm import tqdm
@@ -19,6 +22,17 @@ from augmenter import *
 from elasticsearch import Elasticsearch,client ,helpers
 es = Elasticsearch()
 
+work = Queue.Queue()
+def do_work(in_queue):
+    while True:
+        item = in_queue.get()
+        try:
+            helpers.bulk(es, actions, request_timeout = 100000)
+            actions = []
+        except elasticsearch.ElasticsearchException as es1:
+            print "error"
+            pass
+        in_queue.task_done()
 
 class Data:
     def __init__(self, classes_text, image_size=(800,800,3),batch_size=32, shuffle_buffer_size=4, prefetch_buffer_size=1,num_parallel_calls=4 , num_parallel_readers=1):
@@ -49,6 +63,11 @@ class PreProcessData:
             for lines in f.readlines():
                 arr = lines.strip().split(',')
                 self.class_names.append(arr[0])
+
+        for i in xrange(5):
+            t = threading.Thread(target=do_work,args=(work))
+            t.daemon = True
+            t.start()
 
     def get_open_images(self,filedir,data_type='train',name="OpenImage"):
         try:
@@ -100,7 +119,6 @@ class PreProcessData:
 
 
     def convert_to(self,directory, name, data_type = 'train',image_size = (800,800), num_shards = 1):
-        actions=[]
         images = self.images[:]
         labels = self.labels[:]
         print len(images)
@@ -136,14 +154,11 @@ class PreProcessData:
                     'id ':image_id,
                     'mask':str(base64.b64encode(masks.tobytes()))
                 })
-            if self.doc_count == 1000:
-                try:
-                    helpers.bulk(es, actions, request_timeout = 100000)
-                    actions = []
-                except elasticsearch.ElasticsearchException as es1:
-                    print "error"
-                    pass
+            if self.doc_count%1000 == 0:
+                work.put(actions)
+                actions = []
         
+        work.join()
     	self.images = []
         self.labels = []
     	self.max_boxes = 0
