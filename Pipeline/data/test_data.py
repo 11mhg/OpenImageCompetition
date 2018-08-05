@@ -3,11 +3,20 @@ import csv
 import numpy as np
 import tensorflow as tf
 import os
+import math
+import threading
+import cv2
+import base64
+import elasticsearch
+
 from .bbox import Box
 from tqdm import tqdm
 from .tfrecord_utils import convert_to, input_fn
 from collections import defaultdict
-
+from PIL import Image
+from augmenter import *
+from elasticsearch import Elasticsearch,client ,helpers
+es = Elasticsearch()
 
 
 class Data:
@@ -118,9 +127,8 @@ class PreProcessData:
                     'ymin':ymin,
                     'xmax':xmax,
                     'ymax':ymax,
-                    'id ':image_id
+                    'id ':image_id,
                     'mask':str(base64.b64encode(masks.tobytes()))
-
                 })
             if (self.doc_count%self.bulk_ind==0):
                 try:
