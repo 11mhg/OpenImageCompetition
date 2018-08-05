@@ -13,6 +13,7 @@ from data.bbox import Box
 from tqdm import tqdm
 from data.tfrecord_utils import convert_to, input_fn
 from collections import defaultdict
+from collections import OrderedDict
 from PIL import Image
 from augmenter import *
 from elasticsearch import Elasticsearch,client ,helpers
@@ -75,8 +76,10 @@ class PreProcessData:
                 box = Box(x0=xmin, y0 = ymin, x1=xmax, y1=ymax,label=label)
 
                 dict_annot[filename].append(box)
-
                 if len(dict_annot) == self.bulk_ind:
+                    # save the last entry since it doesnt have all the boxes yet
+                    od = OrderedDict(dict_annot)
+                    temp = od.popitem()
                     for filename in dict_annot.keys():
                         image_name = filedir+data_type+'/'+filename+'.jpg'
                         boxes = np.array(dict_annot[filename])
@@ -93,11 +96,15 @@ class PreProcessData:
                     self.max_boxes = 0
                     self.num_examples = 0
                     dict_annot.clear()
+                    dict_annot[temp[0]] = temp[1]
+
+                
 
     def convert_to(self,directory, name, data_type = 'train',image_size = (800,800), num_shards = 1):
         actions=[]
         images = self.images[:]
         labels = self.labels[:]
+        print len(images)
         # get mask from es mask
         # p = np.frombuffer(base64.b64decode(res['_source']['maskInt']),dtype=np.uint8).reshape(800,800,-1)
         for temp in _process_image_files(images, labels, self.max_boxes,image_size,num_shards):
@@ -137,6 +144,7 @@ class PreProcessData:
                     print es1
                 actions =[]
             self.doc_count+=1
+
         helpers.bulk(es, actions,request_timeout=100000)
         print "Index Information"
         print es.cat.indices(v='true')
