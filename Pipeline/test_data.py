@@ -22,10 +22,11 @@ from augmenter import *
 from elasticsearch import Elasticsearch,client ,helpers
 es = Elasticsearch()
 
-work = Queue.Queue()
+index = Queue.Queue()
+boxing = Queue.Queue()
 lock = threading.Lock()
 
-def do_work(in_queue):
+def do_index(in_queue):
     while True:
         item = in_queue.get()
         try:
@@ -38,6 +39,13 @@ def do_work(in_queue):
                      f.write(i['id ']+'\n')
             lock.release()
         in_queue.task_done()
+
+def do_boxing(in_queue):
+    while True:
+        image, labels,max_boxes = in_queue.get()
+        convert_to(image,labels,max_boxes)
+        in_queue.task_done()
+
 
 class Data:
     def __init__(self, classes_text, image_size=(800,800,3),batch_size=32, shuffle_buffer_size=4, prefetch_buffer_size=1,num_parallel_calls=4 , num_parallel_readers=1):
@@ -61,19 +69,21 @@ class PreProcessData:
         self.images = None
         self.labels = None
         self.image_size=image_size
-        self.doc_count = 0
-        self.bulk_ind = 1000
         with open(classes_text) as f:
             self.class_names = []
             for lines in f.readlines():
                 arr = lines.strip().split(',')
                 self.class_names.append(arr[0])
 
-        for i in xrange(40):
-            t = threading.Thread(target=do_work,args=(work,))
+        for i in xrange(15):
+            t = threading.Thread(target=do_index,args=(index,))
             t.daemon = True
             t.start()
 
+        for i in xrange(5):
+            t = threading.Thread(target=do_boxing,args=(boxing,))
+            t.daemon = True
+            t.start()
     def get_open_images(self,filedir,data_type='train',name="OpenImage"):
         try:
             create_index()
@@ -92,6 +102,8 @@ class PreProcessData:
             dict_annot = defaultdict(list)
             pbar = tqdm(bbox_reader)
             pbar.set_description("Reading Annotations")
+
+            num_supply = 0
             for elem in pbar:
                 filename = elem[0]
                 label = elem[2]
@@ -104,82 +116,47 @@ class PreProcessData:
                 box = Box(x0=xmin, y0 = ymin, x1=xmax, y1=ymax,label=label)
 
                 dict_annot[filename].append(box)
-                if len(dict_annot) == self.bulk_ind*10 +1 :
+                if len(dict_annot) == 10000 +1 :
                     # save the last entry since it doesnt have all the boxes yet
                     od = OrderedDict(dict_annot)
                     temp = od.popitem()
+                    
+                    labels = []
+                    images = []
+                    max_boxes = 0
                     for filename in od.keys():
                         image_name = filedir+data_type+'/'+filename+'.jpg'
                         boxes = np.array(dict_annot[filename])
-                        self.images.append((image_name,self.image_size[0],self.image_size[1]))
-                        if self.max_boxes < boxes.shape[0]:
-                            self.max_boxes = boxes.shape[0]
-                        self.labels.append(boxes)
-                    self.images = np.array(self.images)
-                    self.labels = np.array(self.labels)
-                    self.num_examples = self.images.shape[0]
-                    self.convert_to(filedir, name, data_type=data_type)
+                        images.append((image_name,self.image_size[0],self.image_size[1]))
+                        if max_boxes < boxes.shape[0]:
+                            max_boxes = boxes.shape[0]
+                        labels.append(boxes)
+
+
+                    images = np.array(images)
+                    labels = np.array(labels)
+
+                    boxing.put((images,labels,max_boxes))
+                    num_supply +=1
+                    if num_supply == 5:
+                        boxing.join()
+                        num_supply = 0
                     dict_annot.clear()
                     dict_annot[temp[0]] = temp[1]
 
 
-    def convert_to(self,directory, name, data_type = 'train',image_size = (800,800), num_shards = 1):
-        images = self.images[:]
-        labels = self.labels[:]
-        actions = []
-        # get mask from es mask
-        # p = np.frombuffer(base64.b64decode(res['_source']['maskInt']),dtype=np.uint8).reshape(800,800,-1)
-        for temp in _process_image_files(images, labels, self.max_boxes,image_size,num_shards):
-            image,image_name ,xmin ,ymin ,xmax ,ymax ,label = temp
-            image_id = os.path.splitext(os.path.basename(image_name))[0]
-            hold_mask = np.zeros((800,800),dtype=np.uint8)
-            m_xmin = (np.array(xmin)*800)
-            m_xmax = (np.array(xmax)*800)
-            m_ymin = (np.array(ymin)*800)
-            m_ymax = (np.array(ymax)*800)
-            areas = np.trim_zeros((m_xmax - m_xmin) * (m_ymax - m_ymin))
-            sorted_inds = np.argsort(areas)
 
-            masks = np.zeros((800,800,len(sorted_inds)),dtype=np.uint8)
-            for i in sorted_inds:
-                b = int(np.floor(m_xmin[i]))
-                c = int(np.floor(m_xmax[i]))
-                d = int(np.floor(m_ymin[i]))
-                e = int(np.floor(m_ymax[i]))
-                hold_mask[d:e,b:c] = 1
-                masks[:,:,i] = hold_mask[:,:]
-            self.doc_count+=1
-            actions.append({"_index":"open_image", "_type":'train',
-                    'image': str(image),
-                    'label' : label,
-                    'xmin':xmin,
-                    'ymin':ymin,
-                    'xmax':xmax,
-                    'ymax':ymax,
-                    'id ':image_id,
-                    'mask':str(base64.b64encode(masks.tobytes()))
-                })
-            if self.doc_count%50 == 0:
-                work.put(actions)
-                actions = []
-        
-        work.join()
-    	self.images = []
-        self.labels = []
-    	self.max_boxes = 0
-    	self.num_examples = 0
 
-    def write_tf(self,directory,num_shards = 1):
+    def write_tf(self,num_shards = 1):
         convert_to(self,directory,self.name,num_shards=num_shards)
 
-def _process_image_files(images,labels,max_boxes,image_size,shard_index):
+def _process_image_files(images, labels, max_boxes):
     for index in range(images.shape[0]):
         image_name = images[index][0]
         try:
             image = base64.b64encode(open(image_name,'rb').read())
         except Exception as e:
             print(e)
-            input("Wait")
             continue
         height = float(images[index][1])
         width = float(images[index][2])
@@ -201,6 +178,47 @@ def _process_image_files(images,labels,max_boxes,image_size,shard_index):
                 label.append(box.label)
 
         yield image ,image_name,xmin ,ymin ,xmax ,ymax ,label
+
+def convert_to(images, labels, max_boxes):
+    actions = []
+    doc_count = 0
+    # get mask from es mask
+    # p = np.frombuffer(base64.b64decode(res['_source']['maskInt']),dtype=np.uint8).reshape(800,800,-1)
+    for temp in _process_image_files(images, labels, max_boxes):
+        image,image_name ,xmin ,ymin ,xmax ,ymax ,label = temp
+        image_id = os.path.splitext(os.path.basename(image_name))[0]
+        hold_mask = np.zeros((800,800),dtype=np.uint8)
+        m_xmin = (np.array(xmin)*800)
+        m_xmax = (np.array(xmax)*800)
+        m_ymin = (np.array(ymin)*800)
+        m_ymax = (np.array(ymax)*800)
+        areas = np.trim_zeros((m_xmax - m_xmin) * (m_ymax - m_ymin))
+        sorted_inds = np.argsort(areas)
+
+        masks = np.zeros((800,800,len(sorted_inds)),dtype=np.uint8)
+        for i in sorted_inds:
+            b = int(np.floor(m_xmin[i]))
+            c = int(np.floor(m_xmax[i]))
+            d = int(np.floor(m_ymin[i]))
+            e = int(np.floor(m_ymax[i]))
+            hold_mask[d:e,b:c] = 1
+            masks[:,:,i] = hold_mask[:,:]
+        doc_count+=1
+        actions.append({"_index":"open_image", "_type":'train',
+                'image': str(image),
+                'label' : label,
+                'xmin':xmin,
+                'ymin':ymin,
+                'xmax':xmax,
+                'ymax':ymax,
+                'id ':image_id,
+                'mask':str(base64.b64encode(masks.tobytes()))
+            })
+        if doc_count%50 == 0:
+            index.put(actions)
+            actions = []
+    
+    index.join()
 
 def create_index(name = "open_image"):
     request_body = {
