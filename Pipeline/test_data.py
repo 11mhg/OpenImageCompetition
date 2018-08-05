@@ -43,7 +43,7 @@ class PreProcessData:
         self.labels = None
         self.image_size=image_size
         self.doc_count = 0
-        self.bulk_ind = 100
+        self.bulk_ind = 1000
         with open(classes_text) as f:
             self.class_names = []
             for lines in f.readlines():
@@ -80,7 +80,7 @@ class PreProcessData:
                 box = Box(x0=xmin, y0 = ymin, x1=xmax, y1=ymax,label=label)
 
                 dict_annot[filename].append(box)
-                if len(dict_annot) == self.bulk_ind+1:
+                if len(dict_annot) == self.bulk_ind*100:
                     # save the last entry since it doesnt have all the boxes yet
                     od = OrderedDict(dict_annot)
                     temp = od.popitem()
@@ -98,7 +98,6 @@ class PreProcessData:
                     dict_annot.clear()
                     dict_annot[temp[0]] = temp[1]
 
-                
 
     def convert_to(self,directory, name, data_type = 'train',image_size = (800,800), num_shards = 1):
         actions=[]
@@ -127,7 +126,7 @@ class PreProcessData:
                 hold_mask[d:e,b:c] = 1
                 masks[:,:,i] = hold_mask[:,:]
             self.doc_count+=1
-            actions.append({"_index":"open_image", "_type":'train',
+            actions.append({"_index":"open_image", "_type":'train',"_id":self.doc_count,
                     'image': str(image),
                     'label' : label,
                     'xmin':xmin,
@@ -137,21 +136,17 @@ class PreProcessData:
                     'id ':image_id,
                     'mask':str(base64.b64encode(masks.tobytes()))
                 })
-     
-        try:
-            helpers.bulk(es, actions, request_timeout = 100000)
-        except elasticsearch.ElasticsearchException as es1:
-            print "2222222"
-            print es1
+            if self.doc_count == 1000:
+                try:
+                    helpers.bulk(es, actions, request_timeout = 100000)
+                    actions = []
+                except elasticsearch.ElasticsearchException as es1:
+                    pass
         
     	self.images = []
         self.labels = []
     	self.max_boxes = 0
     	self.num_examples = 0
-	
-        print self.doc_count
-        print "Index Information"
-        print es.cat.indices(v='true')
 
     def write_tf(self,directory,num_shards = 1):
         convert_to(self,directory,self.name,num_shards=num_shards)
