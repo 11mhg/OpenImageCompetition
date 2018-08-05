@@ -51,6 +51,10 @@ class PreProcessData:
                 self.class_names.append(arr[0])
 
     def get_open_images(self,filedir,data_type='train',name="OpenImage"):
+        try:
+            create_index()
+        except:
+            pass
         self.images = []
         self.labels = []
         self.name='OpenImages'+'-'+data_type
