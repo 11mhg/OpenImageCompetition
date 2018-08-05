@@ -1,4 +1,4 @@
-from __future__ import print_function
+
 import csv
 import numpy as np
 import tensorflow as tf
@@ -9,9 +9,9 @@ import cv2
 import base64
 import elasticsearch
 
-from .bbox import Box
+from data.bbox import Box
 from tqdm import tqdm
-from .tfrecord_utils import convert_to, input_fn
+from data.tfrecord_utils import convert_to, input_fn
 from collections import defaultdict
 from PIL import Image
 from augmenter import *
@@ -60,7 +60,7 @@ class PreProcessData:
             bbox_reader = csv.reader(csvfile,delimiter=',')
             print("Open Images contains a large number of files, do not be discourage if it takes a long time.")
             next(bbox_reader)
-            dict_annot = {}
+            dict_annot = defaultdict(list)
             pbar = tqdm(bbox_reader)
             pbar.set_description("Reading Annotations")
             for elem in pbar:
@@ -100,7 +100,7 @@ class PreProcessData:
         labels = self.labels[:]
         # get mask from es mask
         # p = np.frombuffer(base64.b64decode(res['_source']['maskInt']),dtype=np.uint8).reshape(800,800,-1)
-        for temp in _process_image_files(images, labels, self.max_boxes,image_size,i):
+        for temp in _process_image_files(images, labels, self.max_boxes,image_size,num_shards):
             image,image_name ,xmin ,ymin ,xmax ,ymax ,label = temp
             image_id = os.path.splitext(os.path.basename(image_name))[0]
             hold_mask = np.zeros((800,800),dtype=np.uint8)
@@ -108,15 +108,15 @@ class PreProcessData:
             m_xmax = (np.array(xmax)*800)
             m_ymin = (np.array(ymin)*800)
             m_ymax = (np.array(ymax)*800)
-            areas = np.trim_zeros((xmax - xmin) * (ymax - ymin))
+            areas = np.trim_zeros((m_xmax - m_xmin) * (m_ymax - m_ymin))
             sorted_inds = np.argsort(areas)
 
             masks = np.zeros((800,800,len(sorted_inds)),dtype=np.uint8)
             for i in sorted_inds:
-                b = int(np.floor(xmin[i]))
-                c = int(np.floor(xmax[i]))
-                d = int(np.floor(ymin[i]))
-                e = int(np.floor(ymax[i]))
+                b = int(np.floor(m_xmin[i]))
+                c = int(np.floor(m_xmax[i]))
+                d = int(np.floor(m_ymin[i]))
+                e = int(np.floor(m_ymax[i]))
                 hold_mask[d:e,b:c] = 1
                 masks[:,:,i] = hold_mask[:,:]
 
@@ -134,7 +134,6 @@ class PreProcessData:
                 try:
                     helpers.bulk(es, actions,request_timeout=100000)
                 except elasticsearch.ElasticsearchException as es1:
-                    print "error"
                     print es1
                 actions =[]
             self.doc_count+=1
@@ -191,7 +190,7 @@ def create_index(name = "open_image"):
                         'ymin':{'type':'float'},
                         'xmax':{'type':'float'},
                         'ymax':{'type':'float'},
-                        'id':{'type':'text'}
+                        'id':{'type':'text'},
                         'mask':{'type':'text'}
                     }}}}
 
