@@ -42,8 +42,8 @@ class PreProcessData:
         self.images = None
         self.labels = None
         self.image_size=image_size
-        self.doc_count = 1
-        self.bulk_ind = 1500
+        self.doc_count = 0
+        self.bulk_ind = 250
         with open(classes_text) as f:
             self.class_names = []
             for lines in f.readlines():
@@ -95,10 +95,6 @@ class PreProcessData:
                     self.labels = np.array(self.labels)
                     self.num_examples = self.images.shape[0]
                     self.convert_to(filedir, name, data_type=data_type)
-                    self.images = []
-                    self.labels =[]
-                    self.max_boxes = 0
-                    self.num_examples = 0
                     dict_annot.clear()
                     dict_annot[temp[0]] = temp[1]
 
@@ -141,13 +137,19 @@ class PreProcessData:
                     'id ':image_id,
                     'mask':str(base64.b64encode(masks.tobytes()))
                 })
-            if (self.doc_count%self.bulk_ind==0):
-                try:
-                    helpers.bulk(es, actions,request_timeout=100000)
-                except elasticsearch.ElasticsearchException as es1:
-                    print "ERRRRRRORRRRR"
-                    print es1
-                actions =[]
+     
+            try:
+                helpers.bulk(es, actions,request_timeout=100000)
+                actions = []
+            except elasticsearch.ElasticsearchException as es1:
+                print "ERRRRRRORRRRR"
+                print es1
+        
+	self.images = []
+        self.labels = []
+	self.max_boxes = 0
+	self.num_examples = 0
+	
         print self.doc_count
         print "Index Information"
         print es.cat.indices(v='true')
