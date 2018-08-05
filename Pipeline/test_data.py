@@ -23,15 +23,20 @@ from elasticsearch import Elasticsearch,client ,helpers
 es = Elasticsearch()
 
 work = Queue.Queue()
+lock = threading.Lock()
+
 def do_work(in_queue):
     while True:
         item = in_queue.get()
         try:
-            helpers.bulk(es, actions, request_timeout = 100000)
-            actions = []
+            helpers.bulk(es, item, request_timeout = 100000)
         except elasticsearch.ElasticsearchException as es1:
-            print "error"
-            pass
+            lock.acquire()
+            with open('logs.txt','a') as f:
+                 print "error"
+                 for i in item:
+                     f.write(i['id ']+'\n')
+            lock.release()
         in_queue.task_done()
 
 class Data:
@@ -64,8 +69,8 @@ class PreProcessData:
                 arr = lines.strip().split(',')
                 self.class_names.append(arr[0])
 
-        for i in xrange(5):
-            t = threading.Thread(target=do_work,args=(work))
+        for i in xrange(40):
+            t = threading.Thread(target=do_work,args=(work,))
             t.daemon = True
             t.start()
 
@@ -121,7 +126,7 @@ class PreProcessData:
     def convert_to(self,directory, name, data_type = 'train',image_size = (800,800), num_shards = 1):
         images = self.images[:]
         labels = self.labels[:]
-        print len(images)
+        actions = []
         # get mask from es mask
         # p = np.frombuffer(base64.b64decode(res['_source']['maskInt']),dtype=np.uint8).reshape(800,800,-1)
         for temp in _process_image_files(images, labels, self.max_boxes,image_size,num_shards):
@@ -144,7 +149,7 @@ class PreProcessData:
                 hold_mask[d:e,b:c] = 1
                 masks[:,:,i] = hold_mask[:,:]
             self.doc_count+=1
-            actions.append({"_index":"open_image", "_type":'train',"_id":self.doc_count,
+            actions.append({"_index":"open_image", "_type":'train',
                     'image': str(image),
                     'label' : label,
                     'xmin':xmin,
@@ -154,7 +159,7 @@ class PreProcessData:
                     'id ':image_id,
                     'mask':str(base64.b64encode(masks.tobytes()))
                 })
-            if self.doc_count%1000 == 0:
+            if self.doc_count%50 == 0:
                 work.put(actions)
                 actions = []
         
@@ -200,7 +205,7 @@ def _process_image_files(images,labels,max_boxes,image_size,shard_index):
 def create_index(name = "open_image"):
     request_body = {
             'settings' : {
-                'number_of_shards': 15,
+                'number_of_shards': 12,
                 'number_of_replicas': 1,
             },
             #define field properties
