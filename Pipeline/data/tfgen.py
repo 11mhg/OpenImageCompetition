@@ -7,8 +7,9 @@ import numpy as np
 es = Elasticsearch()
 
 def _get_es_batch(ind = 'open_image', d_type = 'train'):
+    name = ind +'_'+d_type
     page = es.search(
-            index = ind,
+            index = name,
             doc_type = d_type,
             scroll = '3m',
             # batch size
