@@ -75,12 +75,12 @@ class PreProcessData:
                 arr = lines.strip().split(',')
                 self.class_names.append(arr[0])
 
-        for i in xrange(15):
+        for i in xrange(10):
             t = threading.Thread(target=do_index,args=(index,))
             t.daemon = True
             t.start()
 
-        for i in xrange(5):
+        for i in xrange(20):
             t = threading.Thread(target=do_boxing,args=(boxing,))
             t.daemon = True
             t.start()
@@ -138,7 +138,7 @@ class PreProcessData:
 
                     boxing.put((images,labels,max_boxes))
                     num_supply +=1
-                    if num_supply == 5:
+                    if num_supply == 10:
                         boxing.join()
                         num_supply = 0
                     dict_annot.clear()
@@ -214,11 +214,10 @@ def convert_to(images, labels, max_boxes):
                 'id ':image_id,
                 'mask':str(base64.b64encode(masks.tobytes()))
             })
-        if doc_count%50 == 0:
+        if doc_count%75 == 0:
             index.put(actions)
             actions = []
-    
-    index.join()
+    index.put(actions)    
 
 def create_index(name = "open_image"):
     request_body = {
