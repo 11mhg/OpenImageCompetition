@@ -46,7 +46,8 @@ def _transform_image(im,image_size = [800,800]):
 def _image_tensors():
     for i in _get_es_batch():
         dataset = tf.data.Dataset.from_tensor_slices(i)
-        dataset = dataset.map(_transform_image)
+        # 32 parallel calls might be too much but we have 40 cores 
+        dataset = dataset.map(_transform_image,num_parallel_calls=32)
     
         # yields 32
         yield dataset
