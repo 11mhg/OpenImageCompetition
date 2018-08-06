@@ -38,6 +38,7 @@ def do_index(in_queue):
                  for i in item:
                      f.write(i['id ']+'\n')
             lock.release()
+	del item[:]
         in_queue.task_done()
 
 def do_boxing(in_queue):
@@ -82,7 +83,7 @@ class PreProcessData:
             t.daemon = True
             t.start()
 
-        for i in xrange(4):
+        for i in xrange(5):
             t = threading.Thread(target=do_boxing,args=(boxing,))
             t.daemon = True
             t.start()
@@ -225,6 +226,7 @@ def create_index(name = "open_image"):
             'settings' : {
                 'number_of_shards': 12,
                 'number_of_replicas': 0,
+		'refresh_interval':'-1'
             },
             #define field properties
             'mappings': {
