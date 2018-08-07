@@ -92,35 +92,37 @@ class PreProcessData:
             dict_annot = defaultdict(list)
             pbar = tqdm(bbox_reader)
             pbar.set_description("Reading Annotations")
-            for elem in pbar:
-                filename = elem[0]
-                label = elem[2]
-                xmin = float(elem[4])
-                xmax = float(elem[5])
-                ymin = float(elem[6])
-                ymax = float(elem[7])
-                #convert label to int
-                label = self.class_names.index(label) 
-                box = Box(x0=xmin, y0 = ymin, x1=xmax, y1=ymax,label=label)
+            for j,elem in enumerate(pbar):
+                if j<1196752:
+                    continue
+                    filename = elem[0]
+                    label = elem[2]
+                    xmin = float(elem[4])
+                    xmax = float(elem[5])
+                    ymin = float(elem[6])
+                    ymax = float(elem[7])
+                    #convert label to int
+                    label = self.class_names.index(label) 
+                    box = Box(x0=xmin, y0 = ymin, x1=xmax, y1=ymax,label=label)
 
-                dict_annot[filename].append(box)
-                if len(dict_annot) == self.bulk_ind*10 +1 :
-                    # save the last entry since it doesnt have all the boxes yet
-                    od = OrderedDict(dict_annot)
-                    temp = od.popitem()
-                    for filename in od.keys():
-                        image_name = filedir+data_type+'/'+filename+'.jpg'
-                        boxes = np.array(dict_annot[filename])
-                        self.images.append((image_name,self.image_size[0],self.image_size[1]))
-                        if self.max_boxes < boxes.shape[0]:
-                            self.max_boxes = boxes.shape[0]
-                        self.labels.append(boxes)
-                    self.images = np.array(self.images)
-                    self.labels = np.array(self.labels)
-                    self.num_examples = self.images.shape[0]
-                    self.convert_to(filedir, name, data_type=data_type)
-                    dict_annot.clear()
-                    dict_annot[temp[0]] = temp[1]
+                    dict_annot[filename].append(box)
+                    if len(dict_annot) == self.bulk_ind*10 +1 :
+                        # save the last entry since it doesnt have all the boxes yet
+                        od = OrderedDict(dict_annot)
+                        temp = od.popitem()
+                        for filename in od.keys():
+                            image_name = filedir+data_type+'/'+filename+'.jpg'
+                            boxes = np.array(dict_annot[filename])
+                            self.images.append((image_name,self.image_size[0],self.image_size[1]))
+                            if self.max_boxes < boxes.shape[0]:
+                                self.max_boxes = boxes.shape[0]
+                            self.labels.append(boxes)
+                        self.images = np.array(self.images)
+                        self.labels = np.array(self.labels)
+                        self.num_examples = self.images.shape[0]
+                        self.convert_to(filedir, name, data_type=data_type)
+                        dict_annot.clear()
+                        dict_annot[temp[0]] = temp[1]
 
             self.convert_to(filedir, name, data_type=data_type) 
 
