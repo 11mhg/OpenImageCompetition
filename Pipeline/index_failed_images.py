@@ -35,7 +35,7 @@ def do_work(in_queue):
                  for i in item:
                      f.write(i['id ']+'\n')
             lock.release()
-    del item[:]
+    	del item[:]
         in_queue.task_done()
 
 class Data:
@@ -86,9 +86,8 @@ class PreProcessData:
         self.num_examples = 0
         # annotations_file = filedir+'annotations/' + '{}-bbox.csv'.format(data_type)
         with open(filedir,'r') as csvfile:
-            bbox_reader = csv.reader(csvfile,delimiter=',')
+            bbox_reader = csv.reader(csvfile,delimiter='\n')
             print("Open Images contains a large number of files, do not be discourage if it takes a long time.")
-            next(bbox_reader)
             dict_annot = defaultdict(list)
             pbar = tqdm(bbox_reader)
             pbar.set_description("Reading Annotations")
