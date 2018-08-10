@@ -93,8 +93,6 @@ class PreProcessData:
             pbar = tqdm(bbox_reader)
             pbar.set_description("Reading Annotations")
             for j,elem in enumerate(pbar):
-                if j<6424064:
-                    continue
                 filename = elem[0]
                 label = elem[2]
                 xmin = float(elem[4])
@@ -125,7 +123,7 @@ class PreProcessData:
                     dict_annot[temp[0]] = temp[1]
                 self.gen_bulk(filedir, name, data_type=data_type)
 
-    def gen_bulk(self, filedir,name,data_type='train')
+    def gen_bulk(self, filedir,name,data_type='train'):
         for success, info in helpers.parallel_bulk(es,self.convert_to(filedir, name, data_type=data_type),\
                                 thread_count =10,max_chunk_bytes=150*1024*1024):
             if not success:
