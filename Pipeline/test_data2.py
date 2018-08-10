@@ -68,10 +68,10 @@ class PreProcessData:
                 arr = lines.strip().split(',')
                 self.class_names.append(arr[0])
 
-        # for i in xrange(10):
-        #     t = threading.Thread(target=do_work,args=(work,))
-        #     t.daemon = True
-        #     t.start()
+        for i in xrange(10):
+            t = threading.Thread(target=do_work,args=(work,))
+            t.daemon = True
+            t.start()
 
     def get_open_images(self,filedir,data_type='train',name="OpenImage"):
 	self.ind_name = 'open_image_'+data_type
@@ -93,6 +93,8 @@ class PreProcessData:
             pbar = tqdm(bbox_reader)
             pbar.set_description("Reading Annotations")
             for j,elem in enumerate(pbar):
+                if j<1196752:
+                    continue
                 filename = elem[0]
                 label = elem[2]
                 xmin = float(elem[4])
@@ -118,23 +120,11 @@ class PreProcessData:
                     self.images = np.array(self.images)
                     self.labels = np.array(self.labels)
                     self.num_examples = self.images.shape[0]
-                    self.gen_bulk(filedir, name, data_type=data_type)
+                    self.convert_to(filedir, name, data_type=data_type)
                     dict_annot.clear()
                     dict_annot[temp[0]] = temp[1]
-            self.gen_bulk(filedir, name, data_type=data_type)
 
-    def gen_bulk(self, filedir,name,data_type='train'):
-        for success, info in helpers.parallel_bulk(es,self.convert_to(filedir, name, data_type=data_type),\
-                                thread_count =10,max_chunk_bytes=150*1024*1024):
-            if not success:
-                with open('logs_train_new.txt','a') as f:
-                    for i in item:
-                        f.write(info+'\n')
-        self.images = []
-        self.labels = []
-        self.max_boxes = 0
-        self.num_examples = 0
-
+            self.convert_to(filedir, name, data_type=data_type) 
 
     def convert_to(self,directory, name, data_type = 'train',image_size = (800,800), num_shards = 1):
         images = self.images[:]
@@ -161,8 +151,8 @@ class PreProcessData:
                 e = int(np.floor(m_ymax[i]))
                 hold_mask[d:e,b:c] = 1
                 masks[:,:,i] = hold_mask[:,:]
-
-            yield {"_index":self.ind_name, "_type":'train',
+            self.doc_count+=1
+            actions.append({"_index":self.ind_name, "_type":'train',
                     'image': str(image),
                     'label' : label,
                     'xmin':xmin,
@@ -171,17 +161,16 @@ class PreProcessData:
                     'ymax':ymax,
                     'id ':image_id,
                     'mask':str(base64.b64encode(masks.tobytes()))
-                }
-
-        #     if self.doc_count%50 == 0:
-        #         work.put(actions)
-        #         actions = []
+                })
+            if self.doc_count%50 == 0:
+                work.put(actions)
+                actions = []
         
-        # work.join()
-        # self.images = []
-        # self.labels = []
-        # self.max_boxes = 0
-        # self.num_examples = 0
+        work.join()
+        self.images = []
+        self.labels = []
+        self.max_boxes = 0
+        self.num_examples = 0
 
     def write_tf(self,directory,num_shards = 1):
         convert_to(self,directory,self.name,num_shards=num_shards)
