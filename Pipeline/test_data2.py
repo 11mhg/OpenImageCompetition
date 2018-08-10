@@ -121,7 +121,7 @@ class PreProcessData:
                     self.gen_bulk(filedir, name, data_type=data_type)
                     dict_annot.clear()
                     dict_annot[temp[0]] = temp[1]
-                self.gen_bulk(filedir, name, data_type=data_type)
+            self.gen_bulk(filedir, name, data_type=data_type)
 
     def gen_bulk(self, filedir,name,data_type='train'):
         for success, info in helpers.parallel_bulk(es,self.convert_to(filedir, name, data_type=data_type),\
