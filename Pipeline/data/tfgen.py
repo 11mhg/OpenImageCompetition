@@ -13,7 +13,7 @@ def _get_es_batch(ind = 'open_image', d_type = 'train'):
             doc_type = d_type,
             scroll = '3m',
             # batch size
-            size = 32,
+            size = 1,
             body = {
                 'query':{'match_all':{}}
             })
@@ -24,17 +24,11 @@ def _get_es_batch(ind = 'open_image', d_type = 'train'):
         page = es.scroll(scroll_id = sid, scroll = '3m')
         sid = page['_scroll_id']
         results = page['hits']['hits']
-        scroll_size = len(results)
-        image = [base64.b64decode(i['_source']['image']) for i in results]
+        scroll_size = len(results)        
+        image = base64.b64decode(results[0]['_source']['image'])
         
-        #label = [i['_source']['label'] for i in results]
-        #masks = [i['_source']['masks'] for i in results]
 
-        #xmin = [i['_source']['xmin'] for i in results]
-        #ymin = [i['_source']['ymin'] for i in results]
-        #xmax = [i['_source']['xmax'] for i in results]
-        #ymax = [i['_source']['ymax'] for i in results]
-        yield image
+        yield _transform_image(image)
 
 # make this into image and resize
 def _transform_image(im,image_size = [800,800]):
@@ -44,10 +38,8 @@ def _transform_image(im,image_size = [800,800]):
     return image_resized
 # call this to get 32 tensorflowed images
 def _image_tensors():
-    for i in _get_es_batch():
-        dataset = tf.data.Dataset.from_tensor_slices(i)
-        # 32 parallel calls might be too much but we have 40 cores 
-        dataset = dataset.map(_transform_image,num_parallel_calls=32)
+
+    ds = Dataset.from_generator(
+        _get_es_batch, (tf.float32), (tf.TensorShape([None])))
     
-        # yields 32
-        yield dataset
+    yield ds
