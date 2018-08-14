@@ -30,12 +30,8 @@ def do_work(in_queue):
         try:
             helpers.bulk(es, item, request_timeout = 100000)
         except elasticsearch.ElasticsearchException as es1:
-            lock.acquire()
-            with open('logs_train_new.txt','a') as f:
-                 for i in item:
-                     f.write(i['id ']+'\n')
-            lock.release()
-	del item[:]
+            pass
+    	del item[:]
         in_queue.task_done()
 
 class Data:
@@ -93,8 +89,6 @@ class PreProcessData:
             pbar = tqdm(bbox_reader)
             pbar.set_description("Reading Annotations")
             for j,elem in enumerate(pbar):
-                if j<1196752:
-                    continue
                 filename = elem[0]
                 label = elem[2]
                 xmin = float(elem[4])
