@@ -31,7 +31,7 @@ def do_work(in_queue):
             helpers.bulk(es, item, request_timeout = 100000)
         except elasticsearch.ElasticsearchException as es1:
             lock.acquire()
-            with open('logs_train.txt','a') as f:
+            with open('logs_train_new.txt','a') as f:
                  for i in item:
                      f.write(i['id ']+'\n')
             lock.release()
