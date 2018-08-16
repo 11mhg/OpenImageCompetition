@@ -143,8 +143,8 @@ class PreProcessData:
                 c = int(np.floor(m_xmax[i]))
                 d = int(np.floor(m_ymin[i]))
                 e = int(np.floor(m_ymax[i]))
-                hold_mask[d:e,b:c] = 1
                 masks[:,:,i] = hold_mask[:,:]
+		hold_mask[d:e,b:c] = 1
             self.doc_count+=1
             actions.append({"_index":self.ind_name, "_type":'train',
                     'image': str(image),
@@ -216,7 +216,7 @@ def create_index(name = "open_image"):
                         'ymin':{'type':'float'},
                         'xmax':{'type':'float'},
                         'ymax':{'type':'float'},
-                        'id':{'type':'text'},
+                        'id ':{'type':'keyword'},
                         'mask':{'type':'text'}
                     }}}}
 
