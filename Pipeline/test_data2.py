@@ -80,7 +80,8 @@ class PreProcessData:
         self.name='OpenImages'+'-'+data_type
         self.max_boxes = 0
         self.num_examples = 0
-        annotations_file = filedir+'annotations/' + '{}-bbox.csv'.format(data_type)
+	annotations_file = 'to_index_new.csv'
+        #annotations_file = filedir+'annotations/' + '{}-bbox.csv'.format(data_type)
         with open(annotations_file,'r') as csvfile:
             bbox_reader = csv.reader(csvfile,delimiter=',')
             print("Open Images contains a large number of files, do not be discourage if it takes a long time.")
