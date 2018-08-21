@@ -28,7 +28,7 @@ def do_work(in_queue):
     while True:
         item = in_queue.get()
         try:
-            helpers.bulk(es, item, request_timeout = 100000)
+            helpers.parabulk(es, item, request_timeout = 100000)
         except elasticsearch.ElasticsearchException as es1:
             pass
     	del item[:]
@@ -118,7 +118,16 @@ class PreProcessData:
                     self.convert_to(filedir, name, data_type=data_type)
                     dict_annot.clear()
                     dict_annot[temp[0]] = temp[1]
-
+            for filename in dict_annot.keys():
+                image_name = filedir+data_type+'/'+filename+'.jpg'
+                boxes = np.array(dict_annot[filename])
+                self.images.append((image_name,self.image_size[0],self.image_size[1]))
+                if self.max_boxes < boxes.shape[0]:
+                    self.max_boxes = boxes.shape[0]
+                self.labels.append(boxes)
+            self.images = np.array(self.images)
+            self.labels = np.array(self.labels)
+            self.num_examples = self.images.shape[0]
             self.convert_to(filedir, name, data_type=data_type) 
 
     def convert_to(self,directory, name, data_type = 'train',image_size = (800,800), num_shards = 1):
