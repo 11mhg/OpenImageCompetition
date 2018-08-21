@@ -36,5 +36,6 @@ import csv
 with open('image_ids_test.csv','w') as f:
     writer = csv.writer(f,delimiter = ',')
     for i in tqdm(a):
-        writer.writerow([i['_id'],i['_source']['id ']])
+        stuff = [[j['_id'],j['_source']['id ]] for j in i]
+        writer.writerows(stuff)
 
