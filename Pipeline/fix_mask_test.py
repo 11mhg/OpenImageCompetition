@@ -9,7 +9,7 @@ import sys
 import cv2
 import base64
 import elasticsearch
-
+from multiprocessing import Process, Queue
 from data.bbox import Box
 from tqdm import tqdm
 from data.tfrecord_utils import convert_to, input_fn
@@ -20,15 +20,15 @@ from augmenter import *
 from elasticsearch import Elasticsearch,client ,helpers
 
 es = Elasticsearch()
-work = Queue.Queue(maxsize=1000)
+work = Queue()
 
 def do_work(in_queue):
 	while True:
 		iden,xmin,xmax,ymin,ymax = in_queue.get()
 		hold_mask = np.zeros((800,800),dtype=np.uint8)
-        m_xmin = (np.array(xmin)*800)
-        m_xmax = (np.array(xmax)*800)
-        m_ymin = (np.array(ymin)*800)
+		m_xmin = (np.array(xmin)*800)
+		m_xmax = (np.array(xmax)*800)
+		m_ymin = (np.array(ymin)*800)
 		m_ymax = (np.array(ymax)*800)
 		areas = np.trim_zeros((m_xmax - m_xmin) * (m_ymax - m_ymin))
 		sorted_inds = np.argsort(areas)
@@ -41,40 +41,45 @@ def do_work(in_queue):
 			masks[:,:,i] = hold_mask[:,:]
 			hold_mask[d:e,b:c] = 1
 		try:
-		    es.update(index = 'open_image_train',doc_type = 'train',id=iden,
-			body={'doc':{'mask':str(base64.b64encode(masks.tobytes()))}},retry_on_conflict = 100000)
+			es.update(index = 'open_image_train',doc_type = 'train',id=iden,
+			body={'doc':{'mask':str(base64.b64encode(masks.tobytes()))}},retry_on_conflict = 100)
 		except:	
-	    	with open('logs.txt','a') as f:
+			with open('logs.txt','a') as f:
 				print "ERROR"
 				writer = csv.writer(f)
-				writer.writerow(iden)
-        in_queue.task_done()
+				writer.writerow([iden])
 
-for i in xrange(40):
-    t = threading.Thread(target=do_work,args=(work,))
-    t.daemon = True
-    t.start()
+
+for i in range(2):
+	Process(target=do_work, args=(work,)).start()
 
 
 page = helpers.scan(es,
         index = 'open_image_train',
         doc_type = 'train',
         scroll = '2m',
-        size = 1000,
-        body = {
+        size = 2000,
+        query = {
             'query':{'match_all':{}},
-            '_source':['xmin','ymin','xmax','ymax']
+            '_source':['xmin','xmax','ymin','ymax']
         },
-		sort = ['_doc'],
+        sort = ['_doc'],
         request_timeout = 10000
     )
 
 # Start scrolling
 for j in tqdm(page):
 	iden = j['_id']
-	xmin = j['_source']['xmin']
-	xmax = j['_source']['xmax']
-	ymin = j['_source']['ymin']
-	ymax = j['_source']['ymax']
-	action = (iden,xmin,xmax,ymin,ymax)
-	work.put(action)
+	try:
+		xmin = j['_source']['xmin']
+		xmax = j['_source']['xmax']
+		ymin = j['_source']['ymin']
+		ymax = j['_source']['ymax']
+		action = (iden,xmin,xmax,ymin,ymax)
+		work.put(action)
+	except:
+		with open('failed.csc','w') as f:
+			writer = csv.writer(f)
+			writer.writerow([iden])
+			print "error"
+
