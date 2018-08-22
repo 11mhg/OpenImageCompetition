@@ -3,14 +3,12 @@ import numpy as np
 import tensorflow as tf
 import os
 import math
-import threading
-import Queue
 import sys
 import cv2
 import base64
 import elasticsearch
 
-
+from multiprocessing import Process, Queue
 from data.bbox import Box
 from tqdm import tqdm
 from data.tfrecord_utils import convert_to, input_fn
@@ -21,18 +19,16 @@ from augmenter import *
 from elasticsearch import Elasticsearch,client ,helpers
 es = Elasticsearch()
 
-work = Queue.Queue()
-lock = threading.Lock()
+work = Queue()
 
 def do_work(in_queue):
     while True:
         item = in_queue.get()
         try:
-            helpers.parabulk(es, item, request_timeout = 100000)
+            helpers.bulk(es, item, request_timeout = 100000)
         except elasticsearch.ElasticsearchException as es1:
             pass
-    	del item[:]
-        in_queue.task_done()
+        
 
 class Data:
     def __init__(self, classes_text, image_size=(800,800,3),batch_size=32, shuffle_buffer_size=4, prefetch_buffer_size=1,num_parallel_calls=4 , num_parallel_readers=1):
@@ -64,13 +60,10 @@ class PreProcessData:
                 arr = lines.strip().split(',')
                 self.class_names.append(arr[0])
 
-        for i in xrange(10):
-            t = threading.Thread(target=do_work,args=(work,))
-            t.daemon = True
-            t.start()
-
+        for i in range(2):
+            Process(target=do_work,args=(work,)).start()
     def get_open_images(self,filedir,data_type='train',name="OpenImage"):
-	self.ind_name = 'open_image_'+data_type
+        self.ind_name = 'open_image_'+data_type
         try:
             create_index(name = self.ind_name)
         except:
@@ -80,7 +73,7 @@ class PreProcessData:
         self.name='OpenImages'+'-'+data_type
         self.max_boxes = 0
         self.num_examples = 0
-	annotations_file = 'to_index_new.csv'
+        annotations_file = 'missing.csv'
         #annotations_file = filedir+'annotations/' + '{}-bbox.csv'.format(data_type)
         with open(annotations_file,'r') as csvfile:
             bbox_reader = csv.reader(csvfile,delimiter=',')
@@ -154,7 +147,7 @@ class PreProcessData:
                 d = int(np.floor(m_ymin[i]))
                 e = int(np.floor(m_ymax[i]))
                 masks[:,:,i] = hold_mask[:,:]
-		hold_mask[d:e,b:c] = 1
+                hold_mask[d:e,b:c] = 1
             self.doc_count+=1
             actions.append({"_index":self.ind_name, "_type":'train',
                     'image': str(image),
@@ -170,7 +163,6 @@ class PreProcessData:
                 work.put(actions)
                 actions = []
         
-        work.join()
         self.images = []
         self.labels = []
         self.max_boxes = 0
