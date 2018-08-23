@@ -85,24 +85,24 @@ def do_covert(in_queue):
             masks[:,:,i] = hold_mask[:,:]
             hold_mask[d:e,b:c] = 1
 
-            actions.append({
-                '_index':'open_image_val',
-				'_type':'train',
-                'image': str(image),
-                'label' : label,
-                'xmin':xmin,
-                'ymin':ymin,
-                'xmax':xmax,
-                'ymax':ymax,
-                'id ':image_id,
-                'mask':str(base64.b64encode(masks.tobytes()))
-            })
-            if len(actions) == 500:
-                try:
-                    helpers.bulk(es,actions,request_timeout=10000)
-                except:
-                    print 'error'
-                actions = []
+        actions.append({
+            '_index':'open_image_val',
+			'_type':'train',
+            'image': str(image),
+            'label' : label,
+            'xmin':xmin,
+            'ymin':ymin,
+            'xmax':xmax,
+            'ymax':ymax,
+            'id ':image_id,
+            'mask':str(base64.b64encode(masks.tobytes()))
+        })
+        if len(actions) == 500:
+            try:
+                helpers.bulk(es,actions,request_timeout=10000)
+            except:
+                print 'error'
+            actions = []
 #        print "CONV QUEUE: ", in_queue.qsize()
 class Data:
     def __init__(self, classes_text, image_size=(800,800,3)):
@@ -117,7 +117,7 @@ class Data:
 class PreProcessData:
     def __init__(self,classes_text='./dummy_labels.txt',image_size=(800,800)):
         self.image_size=image_size
-        self.bulk_ind = 1000
+        self.bulk_ind = 100
         with open(classes_text) as f:
             self.class_names = []
             for lines in f.readlines():
@@ -211,7 +211,7 @@ class PreProcessData:
 def create_index(name = "open_image"):
     request_body = {
             'settings' : {
-                'number_of_shards': 12,
+                'number_of_shards': 3,
                 'number_of_replicas': 0,
                 'refresh_interval':'2s'
             },
