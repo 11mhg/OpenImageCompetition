@@ -1,0 +1,53 @@
+2018-08-27 16:13:56.660818: I tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+2018-08-27 16:13:57.004282: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1405] Found device 0 with properties: 
+name: Tesla V100-PCIE-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.38
+pciBusID: 0000:02:00.0
+totalMemory: 15.78GiB freeMemory: 15.37GiB
+2018-08-27 16:13:57.004324: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1484] Adding visible gpu devices: 0
+2018-08-27 16:13:57.308169: I tensorflow/core/common_runtime/gpu/gpu_device.cc:965] Device interconnect StreamExecutor with strength 1 edge matrix:
+2018-08-27 16:13:57.308216: I tensorflow/core/common_runtime/gpu/gpu_device.cc:971]      0 
+2018-08-27 16:13:57.308222: I tensorflow/core/common_runtime/gpu/gpu_device.cc:984] 0:   N 
+2018-08-27 16:13:57.308534: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1097] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14871 MB memory) -> physical GPU (device: 0, name: Tesla V100-PCIE-16GB, pci bus id: 0000:02:00.0, compute capability: 7.0)
+INFO:tensorflow:global step 0: loss: 9.2454 (5.27 sec/step)
+INFO:tensorflow:global step 1: loss: 9.3541 (0.09 sec/step)
+INFO:tensorflow:global step 2: loss: 9.3833 (1.36 sec/step)
+INFO:tensorflow:global step 3: loss: 9.4374 (0.92 sec/step)
+INFO:tensorflow:global step 4: loss: 8.9198 (0.85 sec/step)
+INFO:tensorflow:global step 5: loss: 9.1597 (1.45 sec/step)
+INFO:tensorflow:global step 6: loss: 9.2134 (0.84 sec/step)
+INFO:tensorflow:global step 7: loss: 9.0258 (0.89 sec/step)
+INFO:tensorflow:global step 8: loss: 8.9650 (1.46 sec/step)
+INFO:tensorflow:global step 9: loss: 9.1732 (0.89 sec/step)
+INFO:tensorflow:global step 10: loss: 8.9873 (0.82 sec/step)
+INFO:tensorflow:global step 11: loss: 8.4972 (0.97 sec/step)
+INFO:tensorflow:global step 12: loss: 8.9028 (0.87 sec/step)
+INFO:tensorflow:global step 13: loss: 8.8783 (1.57 sec/step)
+INFO:tensorflow:global step 14: loss: 8.4577 (0.90 sec/step)
+INFO:tensorflow:global step 15: loss: 8.8330 (0.88 sec/step)
+INFO:tensorflow:global step 16: loss: 8.9375 (1.55 sec/step)
+INFO:tensorflow:global step 17: loss: 8.4964 (0.91 sec/step)
+INFO:tensorflow:global step 18: loss: 8.1035 (0.86 sec/step)
+INFO:tensorflow:global step 19: loss: 8.9541 (1.52 sec/step)
+INFO:tensorflow:global step 20: loss: 8.1562 (0.90 sec/step)
+INFO:tensorflow:global step 21: loss: 9.0269 (1.68 sec/step)
+INFO:tensorflow:global step 22: loss: 8.2934 (0.92 sec/step)
+INFO:tensorflow:global step 23: loss: 8.6932 (0.87 sec/step)
+INFO:tensorflow:global step 24: loss: 8.1861 (1.56 sec/step)
+INFO:tensorflow:global step 25: loss: 8.7873 (0.82 sec/step)
+INFO:tensorflow:global step 26: loss: 8.9908 (0.83 sec/step)
+INFO:tensorflow:global step 27: loss: 8.3023 (1.60 sec/step)
+INFO:tensorflow:global step 28: loss: 8.9280 (0.86 sec/step)
+INFO:tensorflow:global step 29: loss: 8.6648 (0.87 sec/step)
+INFO:tensorflow:global step 30: loss: 8.2919 (1.48 sec/step)
+INFO:tensorflow:global step 31: loss: 8.1903 (0.92 sec/step)
+INFO:tensorflow:global step 32: loss: 8.8977 (1.47 sec/step)
+INFO:tensorflow:global step 33: loss: 9.2795 (0.92 sec/step)
+INFO:tensorflow:global step 34: loss: 8.1778 (0.91 sec/step)
+INFO:tensorflow:global step 35: loss: 8.4170 (1.45 sec/step)
+INFO:tensorflow:global step 36: loss: 8.2738 (0.85 sec/step)
+INFO:tensorflow:global step 37: loss: 8.7069 (0.86 sec/step)
+INFO:tensorflow:global step 38: loss: 9.2595 (1.47 sec/step)
+INFO:tensorflow:global step 39: loss: 8.9769 (0.88 sec/step)
+INFO:tensorflow:global step 40: loss: 9.0236 (0.81 sec/step)
+INFO:tensorflow:global step 41: loss: 8.1022 (0.97 sec/step)
+INFO:tensorflow:global step 42: loss: 8.7867 (0.87 sec/step)

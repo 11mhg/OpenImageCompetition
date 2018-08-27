@@ -9,9 +9,9 @@ resnet_arg_scope = resnet_v2.resnet_arg_scope
 
 
 
-def get_resnet50(inputs,num_classes, is_training=False):
+def get_resnet50(inputs,num_classes, reuse = False, is_training=False):
     with slim.arg_scope(resnet_arg_scope()):
-        net, end_points = resnet_v2.resnet_v2_50(inputs, num_classes, is_training, reuse=tf.AUTO_REUSE)
+        net, end_points = resnet_v2.resnet_v2_50(inputs, num_classes, is_training, reuse=reuse)
     return net, end_points
 
 class Classifier():
@@ -38,19 +38,20 @@ class Classifier():
         data = Data(self.label_file,image_size=(224,224,3), batch_size=self.batch_size)
         if self.es:
             train_data = data.get_batch(es=True)
-            val_data = data.get_batch(es=True)
+#            val_data = data.get_batch(es=True)
         else:
             train_data = data.get_batch(self.dataset_dir)
-            val_data = data.get_batch(self.val_dir)
+#            val_data = data.get_batch(self.val_dir)
+
+#        val_data = data.get_batch(self.val_dir)
 
         self.train_iter = train_data.make_initializable_iterator()
-        self.val_iter = val_data.make_initializable_iterator()
+#        self.val_iter = val_data.make_initializable_iterator()
 
         self.train_image, self.train_label = self.train_iter.get_next()
-        self.val_image, self.val_label = self.val_iter.get_next()
+#        self.val_image, self.val_label = self.val_iter.get_next()
         self.train_image = tf.cast(self.train_image,tf.float32)
-        self.val_image = tf.cast(self.val_image,tf.float32)
-
+#        self.val_image = tf.cast(self.val_image,tf.float32)
 
     def train(self):
         tf.logging.set_verbosity(tf.logging.INFO)
@@ -59,22 +60,20 @@ class Classifier():
 
         self.get_inputs()
 
-        self.logits, self.end_points = get_resnet50(self.train_image, len(self.class_names), is_training=True)
-        self.val_logits, self.val_end_points = get_resnet50(self.val_image,len(self.class_names),is_training=False)
+        self.logits, self.end_points = get_resnet50(self.train_image, len(self.class_names),reuse=False, is_training=True)
+#        self.val_logits, self.val_end_points = get_resnet50(self.val_image,len(self.class_names),reuse=True, is_training=False)
 
         self.train_one_hot = tf.one_hot(self.train_label,len(self.class_names))
-        self.val_one_hot = tf.one_hot(self.val_label, len(self.class_names))
+#        self.val_one_hot = tf.one_hot(self.val_label, len(self.class_names))
         
         self.logits = tf.squeeze(self.logits)
-        self.val_logits = tf.squeeze(self.val_logits)
+#        self.val_logits = tf.squeeze(self.val_logits)
 
         train_loss = tf.losses.softmax_cross_entropy(onehot_labels = self.train_one_hot,
                                                      logits = self.logits)
         total_train_loss = tf.losses.get_total_loss()
-
-        val_loss = tf.losses.softmax_cross_entropy(onehot_labels = self.val_one_hot,
-                                                   logits = self.val_logits)
-
+#        val_loss = tf.losses.softmax_cross_entropy(onehot_labels = self.val_one_hot,
+#                                                   logits = self.val_logits)
 
 
 
@@ -99,21 +98,24 @@ class Classifier():
         accuracy, accuracy_update = tf.metrics.accuracy(predictions,self.train_label)
         train_metrics_op = tf.group(accuracy_update)
 
-        val_predictions = tf.squeeze(tf.argmax(self.val_end_points['predictions'],3),1)
-        val_prob = self.val_end_points['predictions']
-        val_accuracy, val_accuracy_update = tf.metrics.accuracy(val_predictions, self.val_label)
-        val_metrics_op = tf.group(val_accuracy_update)
-
-
+#        val_predictions = tf.squeeze(tf.argmax(self.val_end_points['predictions'],3),1)
+#        val_prob = self.val_end_points['predictions']
+#        val_accuracy, val_accuracy_update = tf.metrics.accuracy(val_predictions, self.val_label)
+#        val_metrics_op = tf.group(val_accuracy_update)
         # summaries
-        tf.summary.image('Input_image',self.train_image[:,:,:,:3])
-        tf.summary.scalar('losses/Total_Loss',total_train_loss)
-        tf.summary.scalar('losses/Val_loss',val_loss)
-        tf.summary.scalar('accuracy',accuracy)
-        tf.summary.scalar('val_accuracy',val_accuracy)
-        tf.summary.scalar('learning_rate',lr)
+#        image_summ = tf.summary.image('Input_image',self.train_image[:,:,:,:3])
+#        mask_train_summ = tf.summary.image('mask_image',self.train_image[:,:,:,3:])
+#        val_image_summ = tf.summary.image('val_image',self.val_image[:,:,:,:3])
+#        mask_val_summ = tf.summary.image('mask_val_image',self.val_image[:,:,:,3:])
+        train_loss_summ = tf.summary.scalar('losses/Total_Loss',total_train_loss)
+#        val_loss_summ = tf.summary.scalar('losses/Val_loss',val_loss)
+        train_acc_summ = tf.summary.scalar('accuracy',accuracy)
+#        val_acc_summ = tf.summary.scalar('val_accuracy',val_accuracy)
+        lr_summ = tf.summary.scalar('learning_rate',lr)
         
-        summary_op = tf.summary.merge_all()
+        train_summary_op = tf.summary.merge([train_loss_summ,train_acc_summ,lr_summ])
+
+#        val_summary_op = tf.summary.merge([val_loss_summ,val_acc_summ,val_image_summ,mask_val_summ])
         
         self.saver = tf.train.Saver(filename=self.save_dir,max_to_keep=2)
         
@@ -132,30 +134,37 @@ class Classifier():
 
         self.sess.run(init_op)
         self.sess.run(self.train_iter.initializer)
-        self.sess.run(self.val_iter.initializer)
-        v_accuracy = 0.0
-
+#        self.sess.run(self.val_iter.initializer)
+        v_accuracy = -1.0
         for e in range(self.num_epochs):
             for i in range(self.num_batches_per_epoch):
                 if i % 10 == 0:
                     loss, _ = self.train_step(train_op,total_train_loss, train_metrics_op, global_step)
-                    summaries = self.sess.run(summary_op)
+                    summaries = self.sess.run(train_summary_op)
+                    writer.add_summary(summaries,e*32+i)
                 else:
-                    loss, _ = self.train_step(train_op,total_train_loss, train_metrics_op, global_step)
-            
+                    loss, _ = self.train_step(train_op,total_train_loss, train_metrics_op, global_step)           
             accuracy_value = self.sess.run(accuracy)
+            if v_accuracy < accuracy_value:
+                v_accuracy = accuracy_value
+                self.saver.save(self.sess,save_path=self.save_dir,global_step=global_step)
+                tf.logging.info('Saving network with accuracy %s.',v_accuracy)             
             tf.logging.info('Epoch %s/%s', e+1, self.num_epochs)
             tf.logging.info('Training Accuracy: %s', accuracy_value)
-            
 
-            tf.logging.info('Beginning Validation')
-            for i in range(self.num_batches_per_epoch):
-                v_loss = self.val_step(val_loss, val_metrics_op)
-            temp_acc = self.sess.run(val_accuracy)
-            if temp_acc > v_accuracy:
-                v_accuracy = temp_acc
-                self.saver.save(self.sess,save_path = self.save_dir,global_step=global_step)
-                tf.logging.info('Better Network saved: %s accuracy in validation',v_accuracy)
+
+#            tf.logging.info('Beginning Validation')
+#            for i in range(self.num_batches_per_epoch):
+#                v_loss = self.val_step(val_loss, val_metrics_op)
+#                summaries = self.sess.run(val_summary_op)
+#                writer.add_summary(summaries,e*32+i)
+#            temp_acc = self.sess.run(val_accuracy)
+#            if temp_acc > v_accuracy:
+#                v_accuracy = temp_acc
+#                self.saver.save(self.sess,save_path = self.save_dir,global_step=global_step)
+#                tf.logging.info('Better Network saved: %s accuracy in validation',v_accuracy)
+#            else:
+#                tf.logging.info('Network performed worse: %s accuracy in validation',v_accuracy)
             tf.logging.info('Epoch finished')
         tf.logging.info('Done Training')
 
