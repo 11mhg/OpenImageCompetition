@@ -60,7 +60,7 @@ class PreProcessData:
                 arr = lines.strip().split(',')
                 self.class_names.append(arr[0])
 
-        for i in range(2):
+        for i in range(3):
             Process(target=do_work,args=(work,)).start()
     def get_open_images(self,filedir,data_type='train',name="OpenImage"):
         self.ind_name = 'open_image_'+data_type
@@ -224,3 +224,4 @@ def create_index(name = "open_image"):
 
     #create the index
     es.indices.create(index = name, body = request_body)
+

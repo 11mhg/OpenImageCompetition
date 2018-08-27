@@ -41,11 +41,10 @@ def do_work(in_queue):
             masks[:,:,i] = hold_mask[:,:]
             hold_mask[d:e,b:c] = 1
         try:
-            es.update(index = 'open_image_val',doc_type = 'train',id=iden,
+            es.update(index = 'open_image_train',doc_type = 'train',id=iden,
             body={'doc':{'mask':str(base64.b64encode(masks.tobytes()))}},retry_on_conflict = 100)
         except:
             with open('logs.txt','a') as f:
-                print "index error"
                 print iden
                 writer = csv.writer(f)
                 writer.writerow([iden])
@@ -56,7 +55,7 @@ for i in range(2):
 
 
 page = helpers.scan(es,
-        index = 'open_image_val',
+        index = 'open_image_train',
         doc_type = 'train',
         scroll = '2m',
         size = 2000,

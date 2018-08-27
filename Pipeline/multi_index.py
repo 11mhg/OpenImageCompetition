@@ -8,7 +8,8 @@ import cv2
 import base64
 import elasticsearch
 import threading
-import Queue as Queue2
+import datetime
+
 from multiprocessing import Process, Queue
 from data.bbox import Box
 from tqdm import tqdm
@@ -21,8 +22,9 @@ from elasticsearch import Elasticsearch,client ,helpers
 es = Elasticsearch()
 
 proc_images = Queue(3)
-conv_images = Queue(5)
+conv_images = Queue(7)
 
+print datetime.datetime.now()
 def do_work(in_queue):
     while True:
         actions = in_queue.get()
@@ -103,7 +105,7 @@ def do_covert(in_queue):
             except:
                 print 'error'
             actions = []
-#        print "CONV QUEUE: ", in_queue.qsize()
+        print "CONV QUEUE: ", in_queue.qsize()
 class Data:
     def __init__(self, classes_text, image_size=(800,800,3)):
         with open(classes_text) as f:
@@ -126,7 +128,7 @@ class PreProcessData:
         for i in range(1):
             Process(target=do_proc_image,args=(proc_images,)).start()
 
-        for i in range(3):
+        for i in range(7):
             Process(target=do_covert,args=(conv_images,)).start()
         #for i in range(1):
          #   Process(target=do_thread).start()
@@ -145,8 +147,8 @@ class PreProcessData:
         images = []
         labels = []
         max_boxes = 0
-        #annotations_file = 'missing.csv'
-        annotations_file = filedir+'annotations/' + '{}-bbox.csv'.format(data_type)
+        annotations_file = 'missing_val.csv'
+        #annotations_file = filedir+'annotations/' + '{}-bbox.csv'.format(data_type)
         with open(annotations_file,'r') as csvfile:
             bbox_reader = csv.reader(csvfile,delimiter=',')
             print("Open Images contains a large number of files, do not be discourage if it takes a long time.")
