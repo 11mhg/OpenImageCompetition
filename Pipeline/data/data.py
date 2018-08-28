@@ -1,13 +1,9 @@
-from __future__ import print_function
-
 import numpy as np
 import tensorflow as tf
 import os
 from .bbox import Box
 from tqdm import tqdm
 from .tfrecord_utils import convert_to, input_fn
-
-
 
 class Data:
     def __init__(self, classes_text, image_size=(800,800,3),batch_size=32, shuffle_buffer_size=4, prefetch_buffer_size=1,num_parallel_calls=4 , num_parallel_readers=1):

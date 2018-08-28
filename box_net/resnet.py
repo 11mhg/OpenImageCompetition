@@ -1,7 +1,7 @@
 import tensorflow as tf
 import time
 import numpy as np
-from classifier_data.classifier_data import * 
+from data.data import * 
 from tensorflow.contrib.slim.python.slim.nets import resnet_v2
 
 slim = tf.contrib.slim
@@ -11,16 +11,25 @@ resnet_arg_scope = resnet_v2.resnet_arg_scope
 
 def get_resnet50(inputs,reuse=False, is_training=False):
     with slim.arg_scope(resnet_arg_scope()):
-        blocks = [
-            resnet_v2.resnet_v2_block('block1', base_depth=64, num_units=3, stride=2),
-            resnet_v2.resnet_v2_block('block2', base_depth=128, num_units=4, stride=2),
-            resnet_v2.resnet_v2_block('block3', base_depth=256, num_units=6, stride=2),
-            resnet_v2.resnet_v2_block('block4', base_depth=512, num_units=3, stride=1),
-        ] 
-        net, end_points = resnet_v2.resnet_v2(inputs,None, is_training, global_pool=False, reuse=reuse)
+        net, end_points = resnet_v2.resnet_v2_50(inputs, is_training=is_training, global_pool=False,scope='box_net', reuse=reuse)
+        
+        net = tf.layers.conv2d(net, 1024,[3,3],activation=tf.nn.leaky_relu,reuse=reuse,name='box_1')
+        net = tf.layers.batch_normalization(net,reuse=reuse,name='bn_1',training=is_training)
+
+        net = tf.layers.conv2d(net,1024,[3,3],activation=tf.nn.leaky_relu,reuse=reuse,name='box_2')
+        net = tf.layers.batch_normalization(net,reuse=reuse,name='bn_2',training=is_training)
+
+        net = tf.layers.conv2d(net,2048,[9,9],strides=(9,9),activation=tf.nn.leaky_relu,reuse=reuse,name='box_3')
+        
+        net = tf.layers.conv2d(net,4,[1,1],activation=None,reuse=reuse,name='pre_act_box')
+
+        net = tf.nn.tanh(net,name='box_out')
+
+        net = tf.squeeze(net,[1,2])
+
         print(net)
         input("Wait")
-    return net, end_points
+    return net
 
 class Classifier():
 
@@ -66,23 +75,17 @@ class Classifier():
         self.decay_steps = int(2*self.num_batches_per_epoch)
 
         self.get_inputs()
-
-        self.logits, self.end_points = get_resnet50(self.train_image, len(self.class_names), is_training=True)
-        self.val_logits, self.val_end_points = get_resnet50(self.val_image,len(self.class_names),is_training=False)
-
-        self.train_one_hot = tf.one_hot(self.train_label,len(self.class_names))
-        self.val_one_hot = tf.one_hot(self.val_label, len(self.class_names))
         
-        self.logits = tf.squeeze(self.logits)
-        self.val_logits = tf.squeeze(self.val_logits)
+        self.box_out = get_resnet50(self.train_image, reuse=False, is_training=True)
+        self.val_box = get_resnet50(self.val_image, reuse=True,is_training=False)
 
-        train_loss = tf.losses.softmax_cross_entropy(onehot_labels = self.train_one_hot,
-                                                     logits = self.logits)
+        train_loss = tf.sqrt(tf.reduce_mean(tf.square(self.train_label-self.box_out)))
+
+        tf.losses.add_loss(train_loss)
+
         total_train_loss = tf.losses.get_total_loss()
 
-        val_loss = tf.losses.softmax_cross_entropy(onehot_labels = self.val_one_hot,
-                                                   logits = self.val_logits)
-
+        val_loss = tf.sqrt(tf.reduce_mean(tf.square(self.val_label-self.val_box))) 
 
 
 
@@ -101,24 +104,19 @@ class Classifier():
 
 
         #metrics
-        predictions = tf.squeeze(tf.argmax(self.end_points['predictions'],3),1)
-        probabilities = self.end_points['predictions']
+        rmse, rmse_update = tf.metrics.root_mean_squared_error(self.train_label,self.box_out)
+        train_metrics_op = tf.group(rmse_update)
 
-        accuracy, accuracy_update = tf.metrics.accuracy(predictions,self.train_label)
-        train_metrics_op = tf.group(accuracy_update)
-
-        val_predictions = tf.squeeze(tf.argmax(self.val_end_points['predictions'],3),1)
-        val_prob = self.val_end_points['predictions']
-        val_accuracy, val_accuracy_update = tf.metrics.accuracy(val_predictions, self.val_label)
-        val_metrics_op = tf.group(val_accuracy_update)
+        val_rmse, val_rmse_update = tf.metrics.root_mean_squared_error(self.val_label,self.val_box)
+        val_metrics_op = tf.group(val_rmse_update)
 
 
         # summaries
         tf.summary.image('Input_image',self.train_image[:,:,:,:3])
         tf.summary.scalar('losses/Total_Loss',total_train_loss)
         tf.summary.scalar('losses/Val_loss',val_loss)
-        tf.summary.scalar('accuracy',accuracy)
-        tf.summary.scalar('val_accuracy',val_accuracy)
+        tf.summary.scalar('rmse',rmse)
+        tf.summary.scalar('val_rmse',val_rmse)
         tf.summary.scalar('learning_rate',lr)
         
         summary_op = tf.summary.merge_all()
@@ -141,29 +139,30 @@ class Classifier():
         self.sess.run(init_op)
         self.sess.run(self.train_iter.initializer)
         self.sess.run(self.val_iter.initializer)
-        v_accuracy = 0.0
+        v_rmse = np.inf
 
         for e in range(self.num_epochs):
             for i in range(self.num_batches_per_epoch):
                 if i % 10 == 0:
                     loss, _ = self.train_step(train_op,total_train_loss, train_metrics_op, global_step)
                     summaries = self.sess.run(summary_op)
+                    writer.add_summary(summaries,e*32+i)
                 else:
                     loss, _ = self.train_step(train_op,total_train_loss, train_metrics_op, global_step)
             
-            accuracy_value = self.sess.run(accuracy)
+            rmse_value = self.sess.run(rmse)
             tf.logging.info('Epoch %s/%s', e+1, self.num_epochs)
-            tf.logging.info('Training Accuracy: %s', accuracy_value)
+            tf.logging.info('Training RMSE: %s', rmse_value)
             
 
             tf.logging.info('Beginning Validation')
             for i in range(self.num_batches_per_epoch):
                 v_loss = self.val_step(val_loss, val_metrics_op)
-            temp_acc = self.sess.run(val_accuracy)
-            if temp_acc > v_accuracy:
-                v_accuracy = temp_acc
+            temp_rmse = self.sess.run(val_rmse)
+            if temp_rmse < v_rmse:
+                v_rmse = temp_rmse
                 self.saver.save(self.sess,save_path = self.save_dir,global_step=global_step)
-                tf.logging.info('Better Network saved: %s accuracy in validation',v_accuracy)
+                tf.logging.info('Better Network saved: %s rmse in validation',v_rmse)
             tf.logging.info('Epoch finished')
         tf.logging.info('Done Training')
 

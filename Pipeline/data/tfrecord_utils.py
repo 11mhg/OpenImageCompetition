@@ -1,14 +1,16 @@
-from __future__ import print_function
-
 import numpy as np
 import tensorflow as tf
 from tqdm import tqdm
 from PIL import Image
-from augmenter import *
+import threading
 import os
 import math
-import threading
 import cv2
+import base64
+import elasticsearch
+from elasticsearch import Elasticsearch,client,helpers
+
+es = Elasticsearch()
 
 
 
@@ -17,17 +19,17 @@ def _int64_feature(value):
         value = [value]
     return tf.train.Feature(int64_list=tf.train.Int64List(value=value))
 
-def _floats_feature(value):
-    if not isinstance(value, list):
-        value = [value]
-    return tf.train.Feature(float_list=tf.train.FloatList(value=value))
-
 def _bytes_feature(value):
     if not isinstance(value, list):
         value = [value]
     return tf.train.Feature(bytes_list=tf.train.BytesList(value=value))
 
-def _process_image_files(images,labels,max_boxes,image_size,filename,shard_index):
+def _floats_feature(value):
+    if not isinstance(value, list):
+        value = [value]
+    return tf.train.Feature(float_list=tf.train.FloatList(value=value))
+
+def _process_image_files(images, labels, max_boxes, image_size, filename):
     print("Starting",flush=True,end='\r')
     with tf.python_io.TFRecordWriter(filename) as writer:
         for index in range(images.shape[0]):
@@ -60,43 +62,131 @@ def _process_image_files(images,labels,max_boxes,image_size,filename,shard_index
                     xmax.append(0)
                     ymax.append(0)
                     label.append(-1)
-                    
-            #Do your heavy image augmentation here (rotation, gaussian, etc)
-            #image scale padding can be done later on
-                
             example = tf.train.Example(
-                features=tf.train.Features(
-                    feature={
-                        'image/object/bbox/xmin': _floats_feature(xmin),
-                        'image/object/bbox/ymin': _floats_feature(ymin),
-                        'image/object/bbox/xmax': _floats_feature(xmax),
-                        'image/object/bbox/ymax': _floats_feature(ymax),
-                        'image/object/bbox/labels': _floats_feature(label),
-                        'image/object/number_of_boxes': _int64_feature(max_boxes),
-                        'image/image_raw': _bytes_feature(tf.compat.as_bytes(image))
-                    }))
+                   features=tf.train.Features(
+                       feature={
+                           'image/object/bbox/xmin': _floats_feature(xmin),
+                           'image/object/bbox/ymin': _floats_feature(ymin),
+                           'image/object/bbox/xmax': _floats_feature(xmax),
+                           'image/object/bbox/ymax': _floats_feature(ymax),
+                           'image/object/bbox/labels': _floats_feature(label),
+                           'image/object/max_boxes': _int64_feature(int(boxes.shape[0])),
+                           'image/object/number_of_boxes': _int64_feature(max_boxes),
+                           'image/image_raw': _bytes_feature(tf.compat.as_bytes(image))
+                        }))
             writer.write(example.SerializeToString())
             print(index/images.shape[0]*100,flush=True,end='\r')
+        print('')
         print("Done",flush=True,end='\r')
 
-def convert_to(self,directory, name, image_size = (800,800), num_shards = 1):
+
+def convert_to(self,directory, name, image_size = (224,224), num_shards = 1):
     filenames = [os.path.join(directory, name+'_{}'.format(i)+'.tfrecords') for i in range(num_shards)]
 
+    #should paralellize, look at parallelize shard writing tfrecord on google
     coord = tf.train.Coordinator()
-    threads = []
+    threads=[]
+
     for i in range(num_shards):
         filename = filenames[i]
         elem_per_shard = int(math.ceil((self.num_examples/num_shards)))
-        start_ndx = i * elem_per_shard
+        start_ndx = i*elem_per_shard
         end_ndx = min((i+1)*elem_per_shard,self.num_examples)
         images = self.images[start_ndx:end_ndx-1]
         labels = self.labels[start_ndx:end_ndx-1]
-        args = (images, labels, self.max_boxes,image_size,filename,i)
+        args = (images,labels, self.max_boxes, image_size, filename)
         t = threading.Thread(target=_process_image_files,args=args)
         t.start()
         threads.append(t)
     coord.join(threads)
     print("Done")
+
+def _es_data():
+	global ind_name
+	page = helpers.scan(es,
+			index = ind_name,
+			doc_type='train',
+			scroll = '2m',
+			size=100,
+			query = {
+				'query':{'match_all':{}}
+			},
+			sort = ['_doc'],
+			request_timeout = 10000
+	)
+	np.random.seed(10)
+	for i in page:
+		xmin = i['_source']['xmin']
+		ymin = i['_source']['ymin']
+		xmax = i['_source']['xmax']
+		ymax = i['_source']['ymax']
+		image = i['_source']['image']
+		mask = i['_source']['mask']
+		labels = i['_source']['label']
+		
+		mask = np.frombuffer(base64.b64decode(mask),dtype=np.uint8).reshape(800,800,-1)
+
+		rand_slice = np.random.randint(0,len(labels))
+		xmin = xmin[rand_slice]
+		ymin = ymin[rand_slice]
+		xmax = xmax[rand_slice]
+		ymin = ymax[rand_slice]
+		label = labels[rand_slice]
+		mask = mask[:,:,rand_slice]
+
+		image = base64.b64decode(image)
+		image = cv2.imdecode(np.fromstring(image,dtype=np.uint8),1)
+		height, width, channels = image.shape
+		
+		xmin =int(xmin*width*width)
+		ymin =int(ymin*height*height)
+		xmax =int(xmax*width*width)
+		ymax = int(ymax*height*height)
+		w = float(xmax - xmin)
+		h = float(ymax - ymin)
+		
+		max_wh = max(w,h)
+		r_w = w/max_wh
+		r_h = h/max_wh
+
+		new_w = int(r_w * 200)
+		new_h = int(r_h * 200)
+
+		crop_img = image[ymin:ymax,xmin:xmax,:]
+		crop_img = cv2.resize(crop_img, (new_w,new_h))
+
+		yield crop_img, mask, label
+		
+def es_map(crop_img, mask, label):
+	img = tf.image.convert_image_dtype(crop_img,tf.float32)
+	mask = tf.image.convert_image_dtype(mask,tf.float32)
+	
+	img = tf.image.resize_image_with_crop_or_pad(img,200,200)
+	mask = tf.image.resize_images(mask,[200,200],align_corners=True)
+
+	image = tf.concat([img,mask],axis=-1)
+
+	return image, label
+
+ind_name = None
+
+def es_input_fn(self,es_name='open_image_',data_type='train'):
+	global ind_name
+	ind_name = es_name+data_type
+	output_types = (tf.uint8,tf.uint8, tf.int64)
+	with tf.device('/cpu:0'):
+		dataset = tf.data.Dataset.from_generator(
+					_get_es_batch,
+					output_types = output_types)
+		dataset = dataset.apply(tf.contrib.data.map_and_batch(
+					map_func = es_map, batch_size = self.batch_size))
+
+		dataset = dataset.prefetch(buffer_size = self.prefetch_buffer_size)
+	return dataset
+					
+		
+	
+	
 
 
 
@@ -122,44 +212,61 @@ def input_fn(self,filedir):
         dataset = dataset.prefetch(buffer_size=self.prefetch_buffer_size)
     return dataset
 
-def _augment_helper(image):
-    return image
-
 def parse_fn(example):
     #Parse TFExample record and do data aug
     example_fmt = {
         'image/image_raw': tf.FixedLenFeature([],tf.string,""),
-        'image/object/bbox/xmin': tf.VarLenFeature(dtype=tf.float32),
-        'image/object/bbox/ymin': tf.VarLenFeature(dtype=tf.float32),
-        'image/object/bbox/xmax': tf.VarLenFeature(dtype=tf.float32),
-        'image/object/bbox/ymax': tf.VarLenFeature(dtype=tf.float32),
-        'image/object/number_of_boxes': tf.FixedLenFeature([],dtype=tf.int64),
         'image/object/bbox/labels': tf.VarLenFeature(dtype=tf.float32),
+        'image/object/bbox/xmin':tf.VarLenFeature(dtype=tf.float32),
+        'image/object/bbox/ymin':tf.VarLenFeature(dtype=tf.float32),
+        'image/object/bbox/xmax':tf.VarLenFeature(dtype=tf.float32),
+        'image/object/bbox/ymax':tf.VarLenFeature(dtype=tf.float32),
+        'image/object/number_of_boxes':tf.FixedLenFeature([],dtype=tf.int64),
+        'image/object/max_boxes':tf.FixedLenFeature([],tf.int64,1)
     }
     parsed = tf.parse_single_example(example, example_fmt)
-    image = tf.image.decode_jpeg(parsed['image/image_raw'])
-    xmin = tf.expand_dims(parsed['image/object/bbox/xmin'].values,0)
-    ymin = tf.expand_dims(parsed['image/object/bbox/ymin'].values,0)
-    xmax = tf.expand_dims(parsed['image/object/bbox/xmax'].values,0)
-    ymax = tf.expand_dims(parsed['image/object/bbox/ymax'].values,0)
-    labels = tf.expand_dims(parsed['image/object/bbox/labels'].values,0)
-    n_boxes = parsed['image/object/number_of_boxes']
-    
-    bbox = tf.concat(axis=0, values = [xmin, ymin, xmax, ymax])
-    bbox = tf.transpose(bbox,[1,0])
-    
-    labels = tf.cast(labels,dtype=tf.int32)
-    labels = tf.transpose(labels,[1,0]) 
-    
-    bbox_shape = tf.stack([n_boxes, tf.constant(4,dtype=tf.int64)])
-    bbox = tf.reshape(bbox,bbox_shape)
-    
-    labels_shape = tf.stack([n_boxes,tf.constant(1,dtype=tf.int64)])
-    labels = tf.reshape(labels,labels_shape)
-    
-    #should already be at 800x800x3 
-    image = tf.image.resize_bilinear(image,[800,800],align_corners=True)
-    image = tf.image.convert_image_dtype(image,tf.float16)
+    image = tf.image.decode_jpeg(parsed['image/image_raw'],channels=3)
+    labels = parsed['image/object/bbox/labels'].values
+    xmin = parsed['image/object/bbox/xmin'].values
+    ymin = parsed['image/object/bbox/ymin'].values
+    xmax = parsed['image/object/bbox/xmax'].values
+    ymax = parsed['image/object/bbox/ymax'].values
 
-    return image, labels, bbox
-    
+    max_boxes = parsed['image/object/max_boxes']
+ 
+    slice_ind = tf.random_uniform([],minval=0,maxval=max_boxes,dtype=tf.int64)  
+
+    x0 = xmin[slice_ind]
+    y0 = ymin[slice_ind]
+    x1 = xmax[slice_ind]
+    y1 = ymax[slice_ind]
+
+    label = tf.stack([x0,y0,x1,y1])
+    label = label * tf.constant(2,tf.float32) 
+    label = label - tf.constant(1,tf.float32)
+
+
+    mask = tf.py_func(get_mask,[slice_ind,xmin,ymin,xmax,ymax],tf.uint8)
+    mask = tf.reshape(mask,(800,800,1))
+    mask = tf.image.convert_image_dtype(mask,tf.float32)
+    mask = tf.image.resize_images(mask,[416,416],align_corners=True)
+    image = tf.image.resize_images(image,[416,416],align_corners=True)
+
+    image = tf.concat([image,mask],axis=-1)
+
+    return image, label 
+
+
+def get_mask(slice_ind, xmin, ymin, xmax, ymax):
+    mask = np.zeros((800,800,1),np.uint8)
+    areas = np.trim_zeros((xmax-xmin)*(ymax-ymin))
+    sorted_inds = np.argsort(areas)
+    for i in sorted_inds:
+        if i == slice_ind:
+            break
+        x0 = int(np.floor(xmin[i]*800))
+        x1 = int(np.floor(xmax[i]*800))
+        y0 = int(np.floor(ymin[i]*800))
+        y1 = int(np.floor(ymax[i]*800))
+        mask[y0:y1,x0:x1] = 255
+    return mask

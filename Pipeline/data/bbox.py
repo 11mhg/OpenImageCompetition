@@ -29,14 +29,19 @@ class Box():
         self.xyxy = [self.x0,self.y0,self.x1,self.y1]
 
 
-    def __init__(self, x0=0, y0=0, x1=0, y1=0,label=0):
+    def __init__(self, x0=0, y0=0, x1=0, y1=0,cx = 0, cy = 0, cw = 0, ch = 0,label=0):
         if x1 < x0 or y1 < y0:
             raise ValueError("x1, y1, may be larger than x0, y0 implying that you are not using the standardized top left, bottom right. Double check")
         self.x0 = x0
         self.x1 = x1
         self.y0 = y0
         self.y1 = y1
-        self.label = label
+        self.cx = cx
+        self.cy = cy
+        self.ch = ch
+        self.cw= cw
+        self.label = 0
+        self.cxcy = [self.cx,self.cy,self.cw,self.ch]
         self.xyxy = [self.x0,self.y0,self.x1,self.y1]
     
     def area(self):
