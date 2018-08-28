@@ -12,7 +12,7 @@ import elasticsearch
 from multiprocessing import Process, Queue
 from data.bbox import Box
 from tqdm import tqdm
-from data.tfrecord_utils import convert_to, input_fn
+#from data.tfrecord_utils import convert_to, input_fn
 from collections import defaultdict
 from collections import OrderedDict
 from PIL import Image
@@ -24,7 +24,10 @@ work = Queue()
 
 def do_work(in_queue):
     while True:
-        iden,xmin,xmax,ymin,ymax = in_queue.get()
+        iden,xmin,xmax,ymin,ymax,message = in_queue.get()
+        if message == 'exit':
+            print 'cleaning up worker ....'
+            break
         hold_mask = np.zeros((800,800),dtype=np.uint8)
         m_xmin = (np.array(xmin)*800*800)
         m_xmax = (np.array(xmax)*800*800)
@@ -50,9 +53,9 @@ def do_work(in_queue):
                 writer = csv.writer(f)
                 writer.writerow([iden])
 
-
+processes = []
 for i in range(2):
-    Process(target=do_work, args=(work,)).start()
+    process.append(Process(target=do_work, args=(work,)).start())
 
 
 page = helpers.scan(es,
@@ -76,11 +79,18 @@ for j in tqdm(page):
         xmax = j['_source']['xmax']
         ymin = j['_source']['ymin']
         ymax = j['_source']['ymax']
-        action = (iden,xmin,xmax,ymin,ymax)
+        action = (iden,xmin,xmax,ymin,ymax,'')
         work.put(action)
     except:
         with open('failed.csv','w') as f:
             writer = csv.writer(f)
             writer.writerow([iden])
             print iden
+action = (None,None,None,None,None,'exit')
 
+for p in processes:
+    work.put(action)
+
+for p in processes:
+    p.join()
+print("Finally Done")
