@@ -27,8 +27,6 @@ def get_resnet50(inputs,reuse=False, is_training=False):
 
         net = tf.squeeze(net,[1,2])
 
-        print(net)
-        input("Wait")
     return net
 
 class Classifier():
