@@ -13,14 +13,15 @@ def get_resnet50(inputs,reuse=False, is_training=False):
     with slim.arg_scope(resnet_arg_scope()):
         net, end_points = resnet_v2.resnet_v2_50(inputs, is_training=is_training, global_pool=False,scope='box_net', reuse=reuse)
         
-        net = tf.layers.conv2d(net, 1024,[3,3],activation=tf.nn.leaky_relu,reuse=reuse,name='box_1')
+        net = tf.layers.conv2d(net, 32,[3,3],activation=tf.nn.leaky_relu,reuse=reuse,name='box_1')
         net = tf.layers.batch_normalization(net,reuse=reuse,name='bn_1',training=is_training)
 
-        net = tf.layers.conv2d(net,1024,[3,3],activation=tf.nn.leaky_relu,reuse=reuse,name='box_2')
+        net = tf.layers.conv2d(net,64,[3,3],activation=tf.nn.leaky_relu,reuse=reuse,name='box_2')
         net = tf.layers.batch_normalization(net,reuse=reuse,name='bn_2',training=is_training)
 
-        net = tf.layers.conv2d(net,2048,[9,9],strides=(9,9),activation=tf.nn.leaky_relu,reuse=reuse,name='box_3')
+        net = tf.layers.conv2d(net,128,[9,9],strides=(9,9),activation=tf.nn.leaky_relu,reuse=reuse,name='box_3')
         
+        net = tf.layers.conv2d(net,1024,[1,1],activation=tf.nn.leaky_relu,reuse=reuse,name='box_4')
         net = tf.layers.conv2d(net,4,[1,1],activation=None,reuse=reuse,name='pre_act_box')
 
         net = tf.nn.tanh(net,name='box_out')
@@ -29,7 +30,7 @@ def get_resnet50(inputs,reuse=False, is_training=False):
 
     return net
 
-class Classifier():
+class Boxnet():
 
     def __init__(self, label_file, dataset_dir, val_dir, es=False, log_dir='./logs/', num_epochs=1, num_iter = 10000, batch_size=32, lr = 0.0002, lr_decay=0.7):
         self.label_file = label_file

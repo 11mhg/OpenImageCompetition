@@ -55,7 +55,9 @@ def do_work(in_queue):
 
 processes = []
 for i in range(2):
-    process.append(Process(target=do_work, args=(work,)).start())
+    p = Process(target=do_work,args=(work,))
+    processes.append(p)
+    p.start()
 
 
 page = helpers.scan(es,
@@ -90,7 +92,8 @@ action = (None,None,None,None,None,'exit')
 
 for p in processes:
     work.put(action)
-
+print("Waiting for process to finish")
+print work.qsize()
 for p in processes:
     p.join()
 print("Finally Done")
