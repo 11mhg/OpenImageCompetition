@@ -1,0 +1,56 @@
+slurmstepd: error: Unable to create TMPDIR [/localscratch/mhg1.7358891.0]: Permission denied
+slurmstepd: error: Setting TMPDIR to /tmp
+[2018-08-18T04:10:01,195][INFO ][o.e.n.Node               ] [] initializing ...
+[2018-08-18T04:10:01,319][INFO ][o.e.e.NodeEnvironment    ] [2zIpCS5] using [1] data paths, mounts [[/scratch (10.29.80.131@o2ib:10.29.80.132@o2ib:/gra_scra)]], net usable_space [859.2tb], net total_space [3.1pb], types [lustre]
+[2018-08-18T04:10:01,319][INFO ][o.e.e.NodeEnvironment    ] [2zIpCS5] heap size [31.8gb], compressed ordinary object pointers [false]
+[2018-08-18T04:10:01,324][INFO ][o.e.n.Node               ] [2zIpCS5] node name derived from node ID [2zIpCS5sRFOWAtuk5i6LRg]; set [node.name] to override
+[2018-08-18T04:10:01,324][INFO ][o.e.n.Node               ] [2zIpCS5] version[6.3.2], pid[4566], build[default/tar/053779d/2018-07-20T05:20:23.451332Z], OS[Linux/3.10.0-693.11.6.el7.x86_64/amd64], JVM[Oracle Corporation/Java HotSpot(TM) 64-Bit Server VM/1.8.0_121/25.121-b13]
+[2018-08-18T04:10:01,325][INFO ][o.e.n.Node               ] [2zIpCS5] JVM arguments [-Xms32g, -Xmx32g, -XX:+UseConcMarkSweepGC, -XX:CMSInitiatingOccupancyFraction=75, -XX:+UseCMSInitiatingOccupancyOnly, -XX:+AlwaysPreTouch, -Xss1m, -Djava.awt.headless=true, -Dfile.encoding=UTF-8, -Djna.nosys=true, -XX:-OmitStackTraceInFastThrow, -Dio.netty.noUnsafe=true, -Dio.netty.noKeySetOptimization=true, -Dio.netty.recycler.maxCapacityPerThread=0, -Dlog4j.shutdownHookEnabled=false, -Dlog4j2.disable.jmx=true, -Djava.io.tmpdir=/tmp/elasticsearch.IJ6uCoIW, -XX:+HeapDumpOnOutOfMemoryError, -XX:HeapDumpPath=data, -XX:ErrorFile=logs/hs_err_pid%p.log, -XX:+PrintGCDetails, -XX:+PrintGCDateStamps, -XX:+PrintTenuringDistribution, -XX:+PrintGCApplicationStoppedTime, -Xloggc:logs/gc.log, -XX:+UseGCLogFileRotation, -XX:NumberOfGCLogFiles=32, -XX:GCLogFileSize=64m, -Des.path.home=/home/mhg1/scratch/elasticsearch-6.3.2, -Des.path.conf=/home/mhg1/scratch/elasticsearch-6.3.2/config, -Des.distribution.flavor=default, -Des.distribution.type=tar]
+[2018-08-18T04:10:09,775][INFO ][o.e.p.PluginsService     ] [2zIpCS5] loaded module [aggs-matrix-stats]
+[2018-08-18T04:10:09,776][INFO ][o.e.p.PluginsService     ] [2zIpCS5] loaded module [analysis-common]
+[2018-08-18T04:10:09,776][INFO ][o.e.p.PluginsService     ] [2zIpCS5] loaded module [ingest-common]
+[2018-08-18T04:10:09,776][INFO ][o.e.p.PluginsService     ] [2zIpCS5] loaded module [lang-expression]
+[2018-08-18T04:10:09,777][INFO ][o.e.p.PluginsService     ] [2zIpCS5] loaded module [lang-mustache]
+[2018-08-18T04:10:09,777][INFO ][o.e.p.PluginsService     ] [2zIpCS5] loaded module [lang-painless]
+[2018-08-18T04:10:09,777][INFO ][o.e.p.PluginsService     ] [2zIpCS5] loaded module [mapper-extras]
+[2018-08-18T04:10:09,777][INFO ][o.e.p.PluginsService     ] [2zIpCS5] loaded module [parent-join]
+[2018-08-18T04:10:09,777][INFO ][o.e.p.PluginsService     ] [2zIpCS5] loaded module [percolator]
+[2018-08-18T04:10:09,777][INFO ][o.e.p.PluginsService     ] [2zIpCS5] loaded module [rank-eval]
+[2018-08-18T04:10:09,778][INFO ][o.e.p.PluginsService     ] [2zIpCS5] loaded module [reindex]
+[2018-08-18T04:10:09,778][INFO ][o.e.p.PluginsService     ] [2zIpCS5] loaded module [repository-url]
+[2018-08-18T04:10:09,778][INFO ][o.e.p.PluginsService     ] [2zIpCS5] loaded module [transport-netty4]
+[2018-08-18T04:10:09,778][INFO ][o.e.p.PluginsService     ] [2zIpCS5] loaded module [tribe]
+[2018-08-18T04:10:09,778][INFO ][o.e.p.PluginsService     ] [2zIpCS5] loaded module [x-pack-core]
+[2018-08-18T04:10:09,778][INFO ][o.e.p.PluginsService     ] [2zIpCS5] loaded module [x-pack-deprecation]
+[2018-08-18T04:10:09,779][INFO ][o.e.p.PluginsService     ] [2zIpCS5] loaded module [x-pack-graph]
+[2018-08-18T04:10:09,779][INFO ][o.e.p.PluginsService     ] [2zIpCS5] loaded module [x-pack-logstash]
+[2018-08-18T04:10:09,779][INFO ][o.e.p.PluginsService     ] [2zIpCS5] loaded module [x-pack-ml]
+[2018-08-18T04:10:09,779][INFO ][o.e.p.PluginsService     ] [2zIpCS5] loaded module [x-pack-monitoring]
+[2018-08-18T04:10:09,779][INFO ][o.e.p.PluginsService     ] [2zIpCS5] loaded module [x-pack-rollup]
+[2018-08-18T04:10:09,779][INFO ][o.e.p.PluginsService     ] [2zIpCS5] loaded module [x-pack-security]
+[2018-08-18T04:10:09,780][INFO ][o.e.p.PluginsService     ] [2zIpCS5] loaded module [x-pack-sql]
+[2018-08-18T04:10:09,780][INFO ][o.e.p.PluginsService     ] [2zIpCS5] loaded module [x-pack-upgrade]
+[2018-08-18T04:10:09,780][INFO ][o.e.p.PluginsService     ] [2zIpCS5] loaded module [x-pack-watcher]
+[2018-08-18T04:10:09,780][INFO ][o.e.p.PluginsService     ] [2zIpCS5] no plugins loaded
+[2018-08-18T04:10:15,109][INFO ][o.e.x.s.a.s.FileRolesStore] [2zIpCS5] parsed [0] roles from file [/home/mhg1/scratch/elasticsearch-6.3.2/config/roles.yml]
+[2018-08-18T04:10:16,195][INFO ][o.e.x.m.j.p.l.CppLogMessageHandler] [controller/4748] [Main.cc@109] controller (64 bit): Version 6.3.2 (Build 903094f295d249) Copyright (c) 2018 Elasticsearch BV
+[2018-08-18T04:10:16,620][DEBUG][o.e.a.ActionModule       ] Using REST wrapper from plugin org.elasticsearch.xpack.security.Security
+[2018-08-18T04:10:16,991][INFO ][o.e.d.DiscoveryModule    ] [2zIpCS5] using discovery type [zen]
+[2018-08-18T04:10:18,018][INFO ][o.e.n.Node               ] [2zIpCS5] initialized
+[2018-08-18T04:10:18,019][INFO ][o.e.n.Node               ] [2zIpCS5] starting ...
+[2018-08-18T04:10:18,435][INFO ][o.e.t.TransportService   ] [2zIpCS5] publish_address {127.0.0.1:9300}, bound_addresses {[::1]:9300}, {127.0.0.1:9300}
+[2018-08-18T04:10:18,472][WARN ][o.e.b.BootstrapChecks    ] [2zIpCS5] max file descriptors [51200] for elasticsearch process is too low, increase to at least [65536]
+[2018-08-18T04:10:18,472][WARN ][o.e.b.BootstrapChecks    ] [2zIpCS5] max virtual memory areas vm.max_map_count [65530] is too low, increase to at least [262144]
+[2018-08-18T04:10:21,542][INFO ][o.e.c.s.MasterService    ] [2zIpCS5] zen-disco-elected-as-master ([0] nodes joined)[, ], reason: new_master {2zIpCS5}{2zIpCS5sRFOWAtuk5i6LRg}{gWjWAfANQYeQrZqHEXQYDA}{127.0.0.1}{127.0.0.1:9300}{ml.machine_memory=42949672960, xpack.installed=true, ml.max_open_jobs=20, ml.enabled=true}
+[2018-08-18T04:10:21,552][INFO ][o.e.c.s.ClusterApplierService] [2zIpCS5] new_master {2zIpCS5}{2zIpCS5sRFOWAtuk5i6LRg}{gWjWAfANQYeQrZqHEXQYDA}{127.0.0.1}{127.0.0.1:9300}{ml.machine_memory=42949672960, xpack.installed=true, ml.max_open_jobs=20, ml.enabled=true}, reason: apply cluster state (from master [master {2zIpCS5}{2zIpCS5sRFOWAtuk5i6LRg}{gWjWAfANQYeQrZqHEXQYDA}{127.0.0.1}{127.0.0.1:9300}{ml.machine_memory=42949672960, xpack.installed=true, ml.max_open_jobs=20, ml.enabled=true} committed version [1] source [zen-disco-elected-as-master ([0] nodes joined)[, ]]])
+[2018-08-18T04:10:21,604][INFO ][o.e.x.s.t.n.SecurityNetty4HttpServerTransport] [2zIpCS5] publish_address {127.0.0.1:9200}, bound_addresses {[::1]:9200}, {127.0.0.1:9200}
+[2018-08-18T04:10:21,607][INFO ][o.e.n.Node               ] [2zIpCS5] started
+[2018-08-18T04:10:22,553][WARN ][o.e.x.s.a.s.m.NativeRoleMappingStore] [2zIpCS5] Failed to clear cache for realms [[]]
+[2018-08-18T04:10:22,580][INFO ][o.e.l.LicenseService     ] [2zIpCS5] license [67c106e8-d6a8-41f4-b031-4ad614ba8fb7] mode [basic] - valid
+[2018-08-18T04:10:22,599][INFO ][o.e.g.GatewayService     ] [2zIpCS5] recovered [0] indices into cluster_state
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/home/mhg1/Pipeline/test_data2.py", line 33
+    del item[:]
+              ^
+TabError: inconsistent use of tabs and spaces in indentation
