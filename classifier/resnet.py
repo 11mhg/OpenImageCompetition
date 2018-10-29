@@ -26,13 +26,32 @@ def loss_fn(logits, labels):
 
 
 def get_resnet(inputs, num_classes, is_training=False):
-    with tf.variable_scope("classifier"):
+    with tf.variable_scope("classifier",custom_getter=float32_variable_storage_getter):
         with slim.arg_scope(resnet_v2.resnet_arg_scope()):
             logits, end_points = resnet_v2.resnet_v2_50(inputs,num_classes, reuse=tf.AUTO_REUSE, is_training=is_training)
     return logits, end_points
 
+def float32_variable_storage_getter(getter, name, shape=None, dtype=None,
+                                    initializer=None, regularizer=None,
+                                    trainable=True,
+                                    *args,**kwargs):
+    """Custom variable getter that forces trainable variables to be stored in
+    float32 precision and then casts them to the training precision.
+    This particular variable getter comes from the nvidia docs, so all credit to the
+    nvidia documenters for the amazing code!
+    """
+    storage_dtype = tf.float32 if trainable else dtype
+    variable = getter(name, shape, dtype=storage_dtype,
+                    initializer=initializer, regularizer=regularizer,
+                    trainable=trainable,
+                    *args, **kwargs)
+    if trainable and dtype != tf.float32:
+        variable = tf.cast(variable, dtype)
+    return variable
 
 
+def gradients_with_loss_scaling(loss, variables, loss_scale=128):
+    return [grad / loss_scale for grad in tf.gradients(loss*loss_scale, variables)]
 
 class Resnet_Classifier():
     def __init__(self, FLAGS):
@@ -41,9 +60,13 @@ class Resnet_Classifier():
         self.lr_decay = 0.7
         self.lr = 0.0002
         self.checkpoint_file = self.flags.model_dir+'model.ckpt'
+        if self.flags.dtype == 'float32':
+            self.dtype = 'float32'
+        else:
+            self.dtype = 'float16'
 
     def ready_dataset(self):
-        data = Data(self.flags.labels)
+        data = Data(self.flags.labels,batch_size=self.flags.batch_size)
         self.num_classes =len(data.class_names)
         self.train_dataset = data.get_batch(self.flags.data_dir)
         self.val_dataset = data.get_batch(self.flags.val_dir)
@@ -71,11 +94,15 @@ class Resnet_Classifier():
         num_batches_per_epoch = int(np.floor(self.flags.steps_per_epoch / self.flags.batch_size))
         num_steps_per_epoch = num_batches_per_epoch 
         decay_steps = int(self.num_epochs_before_decay * num_steps_per_epoch)
-        self.input_tensor = tf.cast(self.input_tensor,tf.float32)
+        if self.dtype == 'float32':
+            self.input_tensor = tf.cast(self.input_tensor,tf.float32)
+        elif self.dtype == 'float16':
+            self.input_tensor = tf.cast(self.input_tensor,tf.float16)
         logits, end_points = get_resnet(self.input_tensor,self.num_classes,is_training=True)
         one_hot_labels = slim.one_hot_encoding(self.label_tensor,self.num_classes)
         logits = tf.squeeze(logits,[1,2])
-
+        if self.dtype == 'float16':
+            logits = tf.cast(logits, tf.float32)
         loss = tf.losses.softmax_cross_entropy(onehot_labels = one_hot_labels, logits=logits)
 
         total_loss = tf.losses.get_total_loss()
@@ -88,10 +115,15 @@ class Resnet_Classifier():
                 decay_steps = decay_steps,
                 decay_rate = self.lr_decay,
                 staircase=True)
-        
+
+        loss_scale = 128. if self.dtype=='float16' else 1.
+
+        variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
+        grad_mult = {variables[i]:1./loss_scale for i in range(0,len(variables))}
+
+
         optimizer = tf.train.AdamOptimizer(learning_rate=lr)
-        train_op = slim.learning.create_train_op(total_loss,optimizer)
-        
+        train_op = slim.learning.create_train_op(total_loss*loss_scale,optimizer,gradient_multipliers=grad_mult) 
 
         predictions = tf.squeeze(tf.argmax(end_points['predictions'],-1),[1])
         probabilities = end_points['predictions']
@@ -103,11 +135,15 @@ class Resnet_Classifier():
         tf.summary.scalar('losses/Total_loss', total_loss)
         tf.summary.scalar('accuracy',accuracy)
         tf.summary.scalar('learning_rate', lr)
-
-        val_logits, val_endpoints = get_resnet(tf.cast(self.val_image,tf.float32),self.num_classes,is_training=False) 
+        if self.dtype=='float32':
+            self.val_image = tf.cast(self.val_image,tf.float32)
+        else:
+            self.val_image = tf.cast(self.val_image, tf.float16)
+        val_logits, val_endpoints = get_resnet(self.val_image,self.num_classes,is_training=False) 
         val_one_hot_labels = slim.one_hot_encoding(self.val_labels,self.num_classes)
         val_logits = tf.squeeze(val_logits,[1,2])
-
+        if self.dtype=='float16':
+            val_logits = tf.cast(val_logits,tf.float32)
         val_loss = tf.losses.softmax_cross_entropy(onehot_labels = one_hot_labels, logits=logits)
          
         val_pred = tf.squeeze(tf.argmax(val_endpoints['predictions'],-1),[1])
@@ -181,7 +217,7 @@ class Resnet_Classifier():
                 
                 v_accuracy = sess.run([val_accuracy])[0]
                 
-                logging.info('Num validation samples; %s', count)
+                logging.info('Num validation samples; %s', count*self.flags.batch_size)
                 logging.info('Validation Loss: %s',v_loss)
                 logging.info('Validation Accuracy: %s', v_accuracy)
                 if v_accuracy >= prev_val_accuracy:

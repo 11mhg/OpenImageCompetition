@@ -28,11 +28,21 @@ def loss_fn(logits, labels):
 def get_resnet(inputs, is_training=False):
     with tf.variable_scope("box_net"):
         with slim.arg_scope(resnet_v2.resnet_arg_scope()):
-            out, end_points = resnet_v2.resnet_v2_50(inputs,None,reuse=tf.AUTO_REUSE, is_training=is_training)
-            out = tf.layers.conv2d(out, 2048,[1,1],activation=tf.nn.leaky_relu,name='box',reuse=tf.AUTO_REUSE)
-            box_out = tf.layers.conv2d(out, 4,[1,1], activation=tf.nn.tanh,name='final_box',reuse=tf.AUTO_REUSE)
-            box_out = tf.squeeze(box_out,[1,2])
-    return box_out, end_points
+            out, end_points = resnet_v2.resnet_v2_50(inputs,num_classes=None,global_pool=False,reuse=tf.AUTO_REUSE, is_training=is_training)
+            attn = tf.layers.conv2d(out,2048,[1,1],activation=tf.nn.sigmoid,name='attn-sigmoid',reuse=tf.AUTO_REUSE)
+            attn = tf.reduce_mean(attn,[3],name='attn_pool',keepdims=True)
+#            attn = tf.layers.conv2d(out, 64, [1,1], padding='same',activation=tf.nn.leaky_relu,name='attn1',reuse=tf.AUTO_REUSE)
+#            attn = tf.layers.conv2d(attn, 32, [1,1], padding='same',activation=tf.nn.leaky_relu,name='attn2',reuse=tf.AUTO_REUSE)
+#            attn = tf.layers.conv2d(attn, 1,[1,1],padding='valid', activation=tf.nn.sigmoid,name='attn3',reuse=tf.AUTO_REUSE)
+#            attn = tf.layers.conv2d(attn, 2048,[1,1],padding='same',activation=None,use_bias=False,kernel_initializer=tf.initializers.ones,name='attn4',trainable=False,reuse=tf.AUTO_REUSE)
+            out = tf.multiply(attn,out)
+#            out = tf.reduce_mean(out,[1,2],name='pool6',keepdims=True)
+            out = tf.layers.conv2d(out, 512,[3,3],padding='same',activation=None,name='box',reuse=tf.AUTO_REUSE)
+            out = tf.layers.flatten(out,name='box_flatten')
+            box_out = tf.layers.dense(out, 4, activation=None, name='box_out',reuse=tf.AUTO_REUSE)
+
+#            box_out = tf.squeeze(box_out,[1,2])
+    return box_out, attn 
 
 
 class Resnet_Classifier():
@@ -44,7 +54,7 @@ class Resnet_Classifier():
         self.checkpoint_file = self.flags.model_dir+'model.ckpt'
 
     def ready_dataset(self):
-        data = Data(self.flags.labels)
+        data = Data(self.flags.labels,batch_size=self.flags.batch_size)
         self.num_classes =len(data.class_names)
         self.train_dataset = data.get_batch(self.flags.data_dir)
         self.val_dataset = data.get_batch(self.flags.val_dir)
@@ -74,7 +84,11 @@ class Resnet_Classifier():
         num_steps_per_epoch = num_batches_per_epoch 
         decay_steps = int(self.num_epochs_before_decay * num_steps_per_epoch)
         self.input_tensor = tf.cast(self.input_tensor,tf.float32)
-        box_out, end_points = get_resnet(self.input_tensor,is_training=True)
+        #train
+        box_out, attn = get_resnet(self.input_tensor,is_training=True)
+        
+#        attn_reg = tf.reduce_sum(tf.square(attn - 1))
+#        tf.losses.add_loss(attn_reg)
         loss = tf.sqrt(tf.reduce_sum(tf.square(self.box_tensor - box_out)))
         tf.losses.add_loss(loss)
         total_loss = tf.losses.get_total_loss()
@@ -96,19 +110,20 @@ class Resnet_Classifier():
         metrics_op = tf.group(rmse_update)
         
         tf.summary.image('input_images',self.input_tensor[:5,:,:,:3])
+        tf.summary.image('image_attention',tf.expand_dims(attn[:5,:,:,0],-1)) 
         tf.summary.image('input_masks',self.input_tensor[:5,:,:,3:])
         tf.summary.scalar('losses/Total_loss', total_loss)
         tf.summary.scalar('rmse',rmse)
         tf.summary.scalar('learning_rate', lr)
-
-        val_box, val_endpoints = get_resnet(tf.cast(self.val_image,tf.float32),is_training=False) 
+        
+        #val
+        val_box, val_attn = get_resnet(tf.cast(self.val_image,tf.float32),is_training=False) 
 
         val_loss = tf.sqrt(tf.reduce_sum(tf.square(self.val_box - val_box))) 
 
         val_xy = tf.reduce_sum(tf.square(self.val_box[:,:2] - val_box[:,:2]))
         val_wh = tf.reduce_sum(tf.square(self.val_box[:,2:] - val_box[:,2:]))
-    
-
+ 
         tf.summary.scalar('losses/val_loss',val_loss)
         tf.summary.scalar('val_xy',val_xy)
         tf.summary.scalar('val_wh',val_wh)

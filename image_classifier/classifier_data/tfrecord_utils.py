@@ -176,34 +176,11 @@ def parse_fn(example):
                                          xmin,
                                          h,
                                          w)
-    def _resize(x,y):
-        max_ = tf.maximum(w,h)
-        r_h = tf.to_float(h)/tf.to_float(max_)
-        r_w = tf.to_float(w)/tf.to_float(max_)
-        
-        new_width = tf.constant(200,dtype=tf.float32) * r_w
-        new_height = tf.constant(200,dtype=tf.float32) * r_h
-
-        return tf.to_int32(new_width), tf.to_int32(new_height)
-
-
-    def _useless(x,y):
-        return tf.to_int32(x),tf.to_int32(y)
-
-    new_w, new_h = tf.cond(tf.logical_or(
-                              tf.greater(w, tf.constant(200,dtype=tf.int32)),
-                              tf.greater(h,tf.constant(200,dtype=tf.int32))
-                           ),
-                lambda: _resize(w,h),
-                lambda: _resize(w,h))
-    
-    image = tf.image.resize_images(image,[new_w,new_h],align_corners=True)
-    mask = tf.image.resize_images(mask,[new_w,new_h],align_corners=True)
-
-    image = tf.image.resize_image_with_crop_or_pad(image,200,200)
-    mask = tf.image.resize_image_with_crop_or_pad(mask,200,200)
+    image = tf.image.resize_images(image,[200,200],align_corners=True,preserve_aspect_ratio=True)
+    mask = tf.image.resize_images(mask,[200,200],align_corners=True,preserve_aspect_ratio=True)
 
     image = tf.image.convert_image_dtype(image,tf.float16)
+    image = image/tf.constant(255.0,tf.float16)
     mask = tf.cast(mask,tf.float16)
     image = tf.concat([image,mask],axis=-1)
     label = tf.cast(label,tf.int32)
@@ -216,7 +193,7 @@ def parse_fn(example):
 def get_mask(box_ind,xmin,ymin,xmax,ymax,initial_width,initial_height):
     height = int(initial_height)
     width = int(initial_width)
-    mask = np.zeros((height,width,1),np.float16)
+    mask = np.ones((height,width,1),np.float16)
     areas = np.trim_zeros((xmax-xmin)*(ymax-ymin))
     sorted_inds = np.argsort(areas)
     for i in sorted_inds:
@@ -226,7 +203,7 @@ def get_mask(box_ind,xmin,ymin,xmax,ymax,initial_width,initial_height):
         y0 = int(np.floor(ymin[i]*height))
         x1 = int(np.floor(xmax[i]*width))
         y1 = int(np.floor(ymax[i]*height))
-        mask[y0:y1,x0:x1] = 1.0
+        mask[y0:y1,x0:x1] = 0.0
     return mask
 
 

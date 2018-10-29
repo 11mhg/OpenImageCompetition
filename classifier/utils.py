@@ -1,4 +1,6 @@
 import tensorflow as tf
+from tensorflow.python.training import optimizer as tf_optimizer
+
 
 def get_flags():
     flags = tf.app.flags
@@ -34,5 +36,8 @@ def get_flags():
     flags.DEFINE_string(
             name='labels',short_name='l',default='./mot_labels.txt',
             help="Labels for Dataset")
-   
+    flags.DEFINE_string(
+            name='dtype',short_name='dt',default='float32',
+            help='Data type for training (float32 or float16')
     return flags
+

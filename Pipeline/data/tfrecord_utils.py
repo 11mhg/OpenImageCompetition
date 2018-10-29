@@ -191,13 +191,13 @@ def parse_fn(example):
 
     #make mask   
     mask = tf.py_func(get_mask,[box_ind, x0,y0,x1,y1], tf.float16)
-
+    image = image/tf.constant(255.0,tf.float16)
     image = tf.concat([image,mask],axis=-1)
     image = tf.reshape(image,(416,416,4)) 
     return image, label, bbox
    
 def get_mask(box_ind, xmin,ymin,xmax,ymax):
-    mask = np.zeros((416,416,1),np.float16)
+    mask = np.ones((416,416,1),np.float16)
     areas = np.trim_zeros((xmax-xmin)*(ymax-ymin))
     sorted_inds = np.argsort(areas)
     for i in sorted_inds:
@@ -207,7 +207,7 @@ def get_mask(box_ind, xmin,ymin,xmax,ymax):
         y0 = int(np.floor(ymin[i]*416))
         x1 = int(np.floor(xmax[i]*416))
         y1 = int(np.floor(ymax[i]*416))
-        mask[y0:y1,x0:x1] = 1.0
+        mask[y0:y1,x0:x1] = 0.0
     return mask
 
 

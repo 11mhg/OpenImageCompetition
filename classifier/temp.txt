@@ -1,0 +1,33 @@
+/home/mhg1/.local/lib/python3.5/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+W1001 11:50:31.816583 48004437198080 tf_logging.py:126] From /home/mhg1/.local/lib/python3.5/site-packages/tensorflow/contrib/slim/python/slim/nets/resnet_v2.py:224: calling reduce_mean (from tensorflow.python.ops.math_ops) with keep_dims is deprecated and will be removed in a future version.
+Instructions for updating:
+keep_dims is deprecated, use keepdims instead
+2018-10-01 11:50:41.804900: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1356] Found device 0 with properties: 
+name: Tesla P100-PCIE-12GB major: 6 minor: 0 memoryClockRate(GHz): 1.3285
+pciBusID: 0000:04:00.0
+totalMemory: 11.91GiB freeMemory: 11.63GiB
+2018-10-01 11:50:41.804972: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1435] Adding visible gpu devices: 0
+2018-10-01 11:50:42.240833: I tensorflow/core/common_runtime/gpu/gpu_device.cc:923] Device interconnect StreamExecutor with strength 1 edge matrix:
+2018-10-01 11:50:42.240889: I tensorflow/core/common_runtime/gpu/gpu_device.cc:929]      0 
+2018-10-01 11:50:42.240909: I tensorflow/core/common_runtime/gpu/gpu_device.cc:942] 0:   N 
+2018-10-01 11:50:42.242182: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1053] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 11256 MB memory) -> physical GPU (device: 0, name: Tesla P100-PCIE-12GB, pci bus id: 0000:04:00.0, compute capability: 6.0)
+2018-10-01 11:50:42.244837: I tensorflow/core/common_runtime/process_util.cc:63] Creating new thread pool with default inter op setting: 2. Tune using inter_op_parallelism_threads for best performance.
+I1001 11:50:44.163892 48004437198080 tf_logging.py:116] Loading latest checkpoint found
+I1001 11:50:44.165636 48004437198080 tf_logging.py:116] Restoring parameters from ./open_dir/model.ckpt-134353
+2018-10-01 11:51:15.855745: W tensorflow/core/common_runtime/bfc_allocator.cc:219] Allocator (GPU_0_bfc) ran out of memory trying to allocate 3.21GiB. The caller indicates that this is not a failure, but may mean that there could be performance gains if more memory were available.
+I1001 11:51:17.475280 48004437198080 tf_logging.py:116] global_step 134353: loss 1.8031 (11.87 sec/step)
+I1001 11:51:22.155287 48004437198080 tf_logging.py:116] global_step 134354: loss 1.5224 (2.07 sec/step)
+I1001 11:51:24.168831 48004437198080 tf_logging.py:116] global_step 134355: loss 1.6366 (2.01 sec/step)
+I1001 11:51:26.180687 48004437198080 tf_logging.py:116] global_step 134356: loss 1.5867 (2.01 sec/step)
+I1001 11:51:28.069566 48004437198080 tf_logging.py:116] global_step 134357: loss 1.3678 (1.89 sec/step)
+I1001 11:51:30.013271 48004437198080 tf_logging.py:116] global_step 134358: loss 1.6839 (1.94 sec/step)
+I1001 11:51:31.972011 48004437198080 tf_logging.py:116] global_step 134359: loss 1.6624 (1.96 sec/step)
+I1001 11:51:33.890697 48004437198080 tf_logging.py:116] global_step 134360: loss 1.4446 (1.92 sec/step)
+I1001 11:51:35.968384 48004437198080 tf_logging.py:116] global_step 134361: loss 1.5122 (2.08 sec/step)
+I1001 11:51:37.860805 48004437198080 tf_logging.py:116] global_step 134362: loss 1.5370 (1.89 sec/step)
+I1001 11:51:39.731672 48004437198080 tf_logging.py:116] global_step 134363: loss 1.3984 (1.87 sec/step)
+I1001 11:51:43.483099 48004437198080 tf_logging.py:116] global_step 134364: loss 1.4710 (2.01 sec/step)
+I1001 11:51:45.367342 48004437198080 tf_logging.py:116] global_step 134365: loss 1.5931 (1.88 sec/step)
+I1001 11:51:47.174201 48004437198080 tf_logging.py:116] global_step 134366: loss 1.3766 (1.81 sec/step)
+I1001 11:51:49.113389 48004437198080 tf_logging.py:116] global_step 134367: loss 1.6251 (1.94 sec/step)

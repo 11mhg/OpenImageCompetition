@@ -10,12 +10,13 @@ from .tfrecord_utils import convert_to, input_fn, es_input_fn
 
 
 class Data:
-    def __init__(self, classes_text, image_size=(800,800,3),batch_size=32, shuffle_buffer_size=4, prefetch_buffer_size=1,num_parallel_calls=4 , num_parallel_readers=1):
-        with open(classes_text) as f:
-            self.class_names = []
-            for lines in f.readlines():
-                arr = lines.strip().split(',')
-                self.class_names.append(arr[-1])
+    def __init__(self, classes_text=None, image_size=(800,800,3),batch_size=32, shuffle_buffer_size=4, prefetch_buffer_size=1,num_parallel_calls=4 , num_parallel_readers=1):
+        if classes_text:
+            with open(classes_text) as f:
+                self.class_names = []
+                for lines in f.readlines():
+                    arr = lines.strip().split(',')
+                    self.class_names.append(arr[-1])
         self.image_size = image_size
         self.batch_size = batch_size
         self.shuffle_buffer_size = shuffle_buffer_size
