@@ -176,8 +176,24 @@ def parse_fn(example):
                                          xmin,
                                          h,
                                          w)
-    image = tf.image.resize_images(image,[200,200],align_corners=True,preserve_aspect_ratio=True)
-    mask = tf.image.resize_images(mask,[200,200],align_corners=True,preserve_aspect_ratio=True)
+    
+    scale_factor_height = (tf.to_float(tf.constant(200)) / tf.to_float(h))
+    scale_factor_width = (tf.to_float(tf.constant(200)) / tf.to_float(w))
+
+    scale_factor = tf.minimum(scale_factor_height,scale_factor_width)
+    scale_height_const = tf.to_int32(scale_factor * tf.to_float(h))
+    scale_width_const = tf.to_int32(scale_factor * tf.to_float(w))
+    
+    image = tf.image.resize_images(image,[scale_height_const,scale_width_const],align_corners=True)
+    mask = tf.image.resize_images(mask,[scale_height_const,scale_width_const],align_corners=True)
+    
+
+    image = tf.image.resize_image_with_pad(image,200,200)
+    mask = tf.image.resize_image_with_pad(mask,200,200)
+    
+    
+#    image = tf.image.resize_images(image,[200,200],align_corners=True,preserve_aspect_ratio=True)
+#    mask = tf.image.resize_images(mask,[200,200],align_corners=True,preserve_aspect_ratio=True)
 
     image = tf.image.convert_image_dtype(image,tf.float16)
     image = image/tf.constant(255.0,tf.float16)
