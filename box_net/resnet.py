@@ -65,7 +65,12 @@ class Resnet_Classifier():
         #put labels in -1 to 1 range
         self.box_tensor = tf.multiply(self.box_tensor,tf.constant(2,dtype=tf.float32)) - tf.constant(1,dtype=tf.float32)
         self.val_box = tf.multiply(self.val_box,tf.constant(2,dtype=tf.float32)) - tf.constant(1,dtype=tf.float32)
-
+        t_xy = self.box_tensor[:,:2]
+        t_wh = tf.log(self.box_tensor[:,2:])
+        self.box_tensor = tf.concat([t_xy,t_wh],-1)
+        v_xy = self.val_box[:,:2]
+        v_wh = tf.log(self.val_box[:,2:])
+        self.val_box = tf.concat([v_xy,v_wh],-1)
 
 
     def train_step(self,sess, train_op, metrics_op, global_step):
