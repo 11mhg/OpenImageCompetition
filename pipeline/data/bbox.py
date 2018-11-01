@@ -43,7 +43,7 @@ class Box():
         inter = diff_xy[0] * diff_xy[1]
         if inter <=0.0:
             return 0.0
-        union = a.area() = b.area() - inter
+        union = a.area() + b.area() - inter
         return inter/union
 
     def area(self):

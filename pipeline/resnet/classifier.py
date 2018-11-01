@@ -19,10 +19,10 @@ class Classifier():
         self.lr_decay = 0.7
         self.lr = 0.0002
         self.checkpoint_file = self.flags.model_dir+'model.ckpt'
-        if self.flags.dtype == 'float32':
-            self.dtype = 'float32'
-        else:
+        if self.flags.dtype == 'float16':
             self.dtype = 'float16'
+        else:
+            self.dtype = 'float32'
 
     def ready_dataset(self):
         data = Data(self.flags.labels, classification=True, batch_size = self.flags.batch_size)
