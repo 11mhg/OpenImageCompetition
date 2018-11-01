@@ -36,7 +36,19 @@ class Classifier():
         self.train_image, self.train_label = self.train_iter.get_next()
         self.val_image, self.val_label = self.val_iter.get_next()
 
-    
+    def train_step(self, sess, train_op, metrics_op, global_step):
+        start_time = time.time()
+        total_loss, global_step_count, _ = sess.run([train_op, global_step, metrics_op])
+        time_elapsed = time.time() - start_time
+        logging.info('global_step %s: loss %.4f (%.2f sec/step)', global_step_count, total_loss, time_elapsed)
+        return total_loss, global_step_count
+
+    def val_step(self, sess, val_op, val_metric):
+        start_time = time.time()
+        v_loss, v_acc = sess.run([val_op, val_metric])
+        time_elapsed = time.time() - start_time
+        return v_loss, v_acc
+
     def train(self):
         num_batches_per_epoch = int(np.floor(self.flags.steps_per_epoch / self.flags.batch_size))
         num_steps_per_epoch = num_batches_per_epoch
