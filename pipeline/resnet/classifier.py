@@ -1,6 +1,6 @@
 from .resnet import get_class_resnet
-from .flags import get_flags
-from ..data.data import Data
+from .utils import get_flags
+from data.data import Data
 import numpy as np
 import os, sys
 import time
@@ -25,7 +25,7 @@ class Classifier():
             self.dtype = 'float32'
 
     def ready_dataset(self):
-        data = Data(self.flags.labels, classification=True, batch_size = self.flags.batch_size)
+        data = Data(classification=True, classes_text=self.flags.labels, batch_size = self.flags.batch_size)
         self.num_classes = len(data.class_names)
         self.train_dataset = data.get_batch(self.flags.data_dir)
         self.val_dataset = data.get_batch(self.flags.val_dir)
@@ -51,7 +51,7 @@ class Classifier():
 
         train_logits, train_end_points = get_class_resnet(self.train_image,self.num_classes,is_training=True)
 
-        one_hot_labels = tf.one_hot(self.label_tensor, self.num_classes)
+        one_hot_labels = tf.one_hot(self.train_label, self.num_classes)
         train_logits = tf.squeeze(train_logits,[1,2])
 
         if self.dtype == 'float16':
@@ -75,11 +75,11 @@ class Classifier():
         variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
         grad_mult = {variables[i]:1./loss_scale for i in range(0,len(variables))}
 
-        optimizer = tf.trani.AdamOptimizer(learning_rate=lr)
+        optimizer = tf.train.AdamOptimizer(learning_rate=lr)
         train_op = slim.learning.create_train_op(loss * loss_scale, optimizer, gradient_multipliers=grad_mult)
 
-        predictions = tf.squeeze(tf.argmax(end_points['predictions'],-1),[1])
-        probabilities = end_points['predictions']
+        predictions = tf.squeeze(tf.argmax(train_end_points['predictions'],-1),[1])
+        probabilities = train_end_points['predictions']
 
         accuracy, accuracy_update = tf.metrics.accuracy(self.train_label, predictions)
         metrics_op = tf.group(accuracy_update)
@@ -97,7 +97,7 @@ class Classifier():
 
         val_logits, val_end_points = get_class_resnet(self.val_image,self.num_classes,is_training=False)
 
-        val_one_hot_labels = tf.one_hot(self.val_labels,self.num_classes)
+        val_one_hot_labels = tf.one_hot(self.val_label,self.num_classes)
         val_logits = tf.squeeze(val_logits,[1,2])
 
         if self.dtype=='float16':
@@ -106,7 +106,7 @@ class Classifier():
         val_loss = tf.losses.softmax_cross_entropy(onehot_labels = one_hot_labels, logits=val_logits)
 
         val_pred = tf.squeeze(tf.argmax(val_end_points['predictions'],-1),[1])
-        val_accuracy,val_accuracy_update = tf.metrics.accuracy(self.val_labels, val_pred)
+        val_accuracy,val_accuracy_update = tf.metrics.accuracy(self.val_label, val_pred)
         val_metrics_op = tf.group(val_accuracy_update)
 
         
