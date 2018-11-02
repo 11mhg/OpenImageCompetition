@@ -168,12 +168,13 @@ def class_parse_fn(example):
     label = tf.squeeze(tf.slice(labels,slice_ind,[1]))
 
     image = tf.image.decode_jpeg(parsed['image/image_raw'],channels=3)
-
+    image = tf.image.resize_images(image,[416,416],align_corners=True)
+    
     initial_width = tf.to_float(tf.shape(image)[1])
     initial_height = tf.to_float(tf.shape(image)[0])
 
     #make mask
-    mask = tf.py_func(get_mask,[box_ind,x0,y0,x1,y1,initial_width,initial_height],tf.float32)
+    mask = tf.py_func(get_mask,[box_ind,x0,y0,x1,y1],tf.float32)
 
     xmin = xmin * initial_width
     ymin = ymin * initial_height
@@ -232,7 +233,7 @@ def get_mask(box_ind, xmin,ymin,xmax,ymax):
     sorted_inds = np.argsort(areas)
 
     for i in sorted_inds:
-        if i==box_inds:
+        if i==box_ind:
             break
         x0 = int(np.floor(xmin[i] * 416))
         y0 = int(np.floor(ymin[i] * 416))
