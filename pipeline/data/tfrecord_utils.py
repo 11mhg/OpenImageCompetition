@@ -4,6 +4,7 @@ from PIL import Image
 import os
 import math
 import cv2
+import random
 from .bbox import *
 import threading
 
@@ -324,5 +325,74 @@ def convert_to(self,directory, name, image_size = (224,224), num_shards = 1):
     print("Done")
 
 
+
+def get_instance(self,ind):
+    img = self.images[ind]
+    labels = self.labels[ind]
+    boxes = np.zeros((labels.shape[0],4),np.float32)
+    classes = []
+    for e, box in enumerate(labels):
+        boxes[e,0] = box.x0
+        boxes[e,1] = box.y0
+        boxes[e,2] = box.x1
+        boxes[e,3] = box.y1
+        classes.append(box.label)
+
+    classes = np.array(classes)
+    areas = np.trim_zeros((boxes[:,2]-boxes[:,0])*(boxes[:,3]-boxes[:,1]))
+    sorted_inds = np.argsort(areas)
+
+    self.masked[ind][sorted_inds[0]] = True
+    rand_int = random.randint(0,sorted_inds.shape[0]-1)
+    while self.masked[ind][sorted_inds[rand_int]] != True:
+        rand_int -= 1
+    self.masked[ind][sorted_inds[rand_int+1]] = True
+                
+    img = Image.open(img).convert('RGB')
+    img = img.resize((416,416),resample=Image.BILINEAR)
+    img = np.array(img,dtype=np.float32)
+    
+    if img.max() > 1:
+        img /= 255.0
+    box = boxes[sorted_inds[rand_int]]
+    box *= 416.0
+    b_w = box[2] - box[0]
+    b_h = box[3] - box[1]
+    cx = box[0] + (b_w/2.)
+    cy = box[1] + (b_h/2.)
+    box = [cx,cy,b_w,b_h]
+    c = classes[sorted_inds[rand_int]]
+    mask = generator_masks(img,sorted_inds[rand_int])
+    img = np.concatenate((img,mask),axis=-1)
+
+    return img, box, c
+
+def generator_masks(img,ind):
+    if ind == 0:
+        return np.zeros((416,416,1),dtype=np.float32)
+    path = os.path.abspath(os.path.join(os.path.dirname(img),'..','masks'))
+    path = os.path.join(path,os.path.splitext(os.path.basename(img))[0]+'_'+str(ind)+'.npy')
+    if not os.path.exists(path):
+        raise ValueError("Problem during reading of masks, cannot find mask at path:\n"+str(path))
+    return np.load(path)
+
+def generator(self): 
+    self.masked = np.array([None]*self.num_images)
+    for i in range(masked.shape[0]):
+        self.masked[i] = [False] * (self.labels[i].shape[0])
+    image_index = np.arange(self.num_images)
+    np.random.shuffle(image_index) 
+    def _generator():
+        while True:
+            imgs, boxes, cs = [],[],[]
+            for _ in range(self.batch_size):
+                ind = np.random.choice(image_index)
+                img, box, c = get_instance(self,ind)
+                imgs.append(img)
+                boxes.append(box)
+                cs.append(c)
+            yield (np.array(imgs),np.array(boxes),np.array(cs))
+
+    return _generator
 
 
