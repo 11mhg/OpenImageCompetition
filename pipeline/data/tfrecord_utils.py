@@ -327,7 +327,7 @@ def convert_to(self,directory, name, image_size = (224,224), num_shards = 1):
 
 
 def get_instance(self,ind):
-    img = self.images[ind]
+    img_name = self.images[ind]
     labels = self.labels[ind]
     boxes = np.zeros((labels.shape[0],4),np.float32)
     classes = []
@@ -346,14 +346,19 @@ def get_instance(self,ind):
     rand_int = random.randint(0,sorted_inds.shape[0]-1)
     while self.masked[ind][sorted_inds[rand_int]] != True:
         rand_int -= 1
-    self.masked[ind][sorted_inds[rand_int+1]] = True
-                
-    img = Image.open(img).convert('RGB')
-    img = img.resize((416,416),resample=Image.BILINEAR)
+    if rand_int+1 < sorted_inds.shape[0]:
+        self.masked[ind][sorted_inds[rand_int+1]] = True
+
+    img = Image.open(img_name).convert('RGB')
+    img = img.resize((416,416))
     img = np.array(img,dtype=np.float32)
-    
+     
     if img.max() > 1:
         img /= 255.0
+    temp = img*255.0
+    temp = Image.fromarray(img,np.uint8)
+    temp.save(os.getcwd()+'../temp.jpg')
+    
     box = boxes[sorted_inds[rand_int]]
     box *= 416.0
     b_w = box[2] - box[0]
@@ -362,23 +367,26 @@ def get_instance(self,ind):
     cy = box[1] + (b_h/2.)
     box = [cx,cy,b_w,b_h]
     c = classes[sorted_inds[rand_int]]
-    mask = generator_masks(img,sorted_inds[rand_int])
+    mask = generator_masks(img_name,rand_int)
     img = np.concatenate((img,mask),axis=-1)
 
     return img, box, c
 
-def generator_masks(img,ind):
+def generator_masks(img_name,ind):
     if ind == 0:
         return np.zeros((416,416,1),dtype=np.float32)
-    path = os.path.abspath(os.path.join(os.path.dirname(img),'..','masks'))
-    path = os.path.join(path,os.path.splitext(os.path.basename(img))[0]+'_'+str(ind)+'.npy')
+
+    path = os.path.abspath(os.path.join(os.path.dirname(img_name),'..','masks'))
+    
+    path = os.path.join(path,os.path.splitext(os.path.basename(img_name))[0]+'_'+str(ind)+'.npy')
+
     if not os.path.exists(path):
         raise ValueError("Problem during reading of masks, cannot find mask at path:\n"+str(path))
     return np.load(path)
 
 def generator(self): 
     self.masked = np.array([None]*self.num_images)
-    for i in range(masked.shape[0]):
+    for i in range(self.masked.shape[0]):
         self.masked[i] = [False] * (self.labels[i].shape[0])
     image_index = np.arange(self.num_images)
     np.random.shuffle(image_index) 
@@ -393,6 +401,6 @@ def generator(self):
                 cs.append(c)
             yield (np.array(imgs),np.array(boxes),np.array(cs))
 
-    return _generator
+    return _generator()
 
 

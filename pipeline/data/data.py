@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import numpy as np
 import tensorflow as tf
+from .bbox import *
 import os
 from tqdm import tqdm
 from .tfrecord_utils import input_fn, generator

@@ -34,6 +34,18 @@ class Box():
         if self.x1 < self.x0 or self.y1 < self.y0:
             raise ValueError("x1,y1 may be smaller than x0,y0 implying you aren't following standards of top left bottom right (x0y0x1y1). Double Check")
 
+    def calculate_xyxy(self):
+        self.x0 = self.cx - (self.w/2.)
+        self.y0 = self.cy - (self.h/2.)
+        self.x1 = self.cx + (self.w/2.)
+        self.y1 = self.cy + (self.h/2.)
+
+    def calculate_cxcy(self):
+        self.w = self.x1 - self.x0
+        self.h = self.y1 - self.y0
+        self.cx = self.x0 + (self.w/2.)
+        self.cy = self.y0 + (self.h/2.)
+
     def compute_IoU(self, box_b):
         a = self.xyxy
         b = box_b.xyxy
