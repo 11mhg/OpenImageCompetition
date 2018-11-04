@@ -8,6 +8,8 @@ import random
 from .bbox import *
 import threading
 
+
+
 def _int64_feature(value):
     if not isinstance(value, list):
         value = [value]
@@ -349,16 +351,11 @@ def get_instance(self,ind):
     if rand_int+1 < sorted_inds.shape[0]:
         self.masked[ind][sorted_inds[rand_int+1]] = True
 
-    img = Image.open(img_name).convert('RGB')
-    img = img.resize((416,416))
-    img = np.array(img,dtype=np.float32)
-     
-    if img.max() > 1:
-        img /= 255.0
-    temp = img*255.0
-    temp = Image.fromarray(img,np.uint8)
-    temp.save(os.getcwd()+'../temp.jpg')
-    
+    img_bgr = cv2.imread(img_name,cv2.IMREAD_COLOR)
+    img = img_bgr[...,::-1]
+
+    img = cv2.resize(img,(416,416))
+
     box = boxes[sorted_inds[rand_int]]
     box *= 416.0
     b_w = box[2] - box[0]
@@ -371,6 +368,7 @@ def get_instance(self,ind):
     img = np.concatenate((img,mask),axis=-1)
 
     return img, box, c
+
 
 def generator_masks(img_name,ind):
     if ind == 0:
