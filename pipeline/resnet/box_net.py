@@ -45,7 +45,9 @@ class Box_net():
         v_xy = self.val_box[:,:2]
         v_wh = tf.log(self.val_box[:,2:])
         self.val_box = tf.concat([v_xy, v_wh],-1)
-        
+
+        print(self.train_box)
+        input("Wait")
 
     def train_step(self, sess, train_op, metrics_op, global_step):
         start_time = time.time()
@@ -55,9 +57,7 @@ class Box_net():
         return total_loss, global_step_count
 
     def val_step(self, sess, val_op, val_metric):
-        start_time = time.time()
         v_loss, v_acc = sess.run([val_op, val_metric])
-        time_elapsed = time.time() - start_time
         return v_loss, v_acc
 
     def train(self):
@@ -73,16 +73,13 @@ class Box_net():
             self.val_image = tf.cast(self.val_image,tf.float16)
 
         train_out, train_attn = get_box_resnet(self.train_image,is_training=True)
-
-        if self.dtype == 'float16':
-            train_pbox = tf.cast(train_out, tf.float32)
-
-        loss = tf.sqrt(tf.reduce_sum(tf.square(self.train_box - train_pbox)))
-        #add loss to collection of losses
-        tf.losses.add_loss(loss)
         
-        loss = tf.losses.get_total_loss()
+        if self.dtype == 'float16':
+            train_out = tf.cast(train_out, tf.float32)
 
+        loss = tf.losses.mean_squared_error(self.train_box,train_out)
+        total_loss = tf.losses.get_total_loss()
+        
         global_step = tf.train.get_or_create_global_step()
 
         lr = tf.train.exponential_decay(
@@ -92,15 +89,17 @@ class Box_net():
                 decay_rate = self.lr_decay,
                 staircase=True)
 
-        loss_scale = 128. if self.dtype=='float16' else 1.
-
-        variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
-        grad_mult = {variables[i]:1./loss_scale for i in range(0,len(variables))}
+#        loss_scale = 128. if self.dtype=='float16' else 1.
+#
+#        variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
+#        grad_mult = {variables[i]:1./loss_scale for i in range(0,len(variables))}
 
         optimizer = tf.train.AdamOptimizer(learning_rate=lr)
-        train_op = slim.learning.create_train_op(loss * loss_scale, optimizer, gradient_multipliers=grad_mult)
+#        train_op = slim.learning.create_train_op(loss * loss_scale, optimizer, gradient_multipliers=grad_mult)
+        train_op = slim.learning.create_train_op(total_loss, optimizer)
 
-        rmse, rmse_update = tf.metrics.root_mean_squared_error(self.train_box,train_pbox) 
+
+        rmse, rmse_update = tf.metrics.root_mean_squared_error(self.train_box,train_out) 
         metrics_op = tf.group(rmse_update)
 
 
@@ -108,22 +107,22 @@ class Box_net():
         train_image_summ = tf.summary.image('train/input_images',self.train_image[:5,:,:,:3])
         train_mask_summ = tf.summary.image('train/input_masks',self.train_image[:5,:,:,3:])
         train_attn_summ = tf.summary.image('train/attn_out',train_attn[:5,:,:,:])
-        train_loss_summ = tf.summary.scalar('train/train_loss',loss)
+        train_loss_summ = tf.summary.scalar('train/train_loss',total_loss)
         train_rmse_summ = tf.summary.scalar('train/rmse',rmse)
         train_lr_summ = tf.summary.scalar('train/learning_rate',lr)
 
-        train_summary_op = tf.summary.merge([train_image_summ,train_attn_summ
+        train_summary_op = tf.summary.merge([train_image_summ,train_attn_summ,
             train_mask_summ,train_loss_summ,train_rmse_summ,train_lr_summ])
 
         #validation
         val_out, val_attn = get_box_resnet(self.val_image,is_training=False)
 
         if self.dtype=='float16':
-            val_pbox = tf.cast(val_out,tf.float32)
+            val_out = tf.cast(val_out,tf.float32)
 
-        val_loss = tf.sqrt(tf.reduce_sum(tf.square(self.val_box - val_pbox)))
+        val_loss = tf.sqrt(tf.reduce_sum(tf.square(self.val_box - val_out)))
 
-        val_rmse, val_rmse_update = tf.metrics.root_mean_squared_error(self.val_box, val_pbox)
+        val_rmse, val_rmse_update = tf.metrics.root_mean_squared_error(self.val_box, val_out)
 
         val_metrics_op = tf.group(val_rmse_update)
 

@@ -118,7 +118,6 @@ def box_parse_fn(example):
     image = image/tf.constant(255.0,tf.float32)
     image = tf.concat([image,mask],axis=-1)
     image = tf.reshape(image,(416,416,4))
-
     return image, label, bbox
 
 

@@ -9,4 +9,4 @@
 #SBATCH --mail-user=11mhg@queensu.ca
 #SBATCH --mail-type=ALL
 
-time python3 resnet.py --batch_size 128 --data_dir ../Dataset/OpenImage/tfrecords/*train* --val_dir ../Dataset/OpenImage/tfrecords/*val* --labels ./OpenImage.txt --model_dir ./open_dir/ --num_epochs 75 --steps_per_epoch 100000 --logs ./logs/
+time python3 train.py --batch_size 128 --data_dir ../Dataset/OpenImage/tfrecords/*train* --val_dir ../Dataset/OpenImage/tfrecords/*val* --labels ./OpenImage.txt --model_dir ./open_dir/ --num_epochs 75 --steps_per_epoch 100000 --logs ./logs/

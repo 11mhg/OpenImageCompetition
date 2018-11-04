@@ -44,7 +44,7 @@ def get_class_resnet(inputs,num_classes,is_training=False):
 
 
 def get_box_resnet(inputs, is_training=False):
-    with tf.variable_scope("box_net",custom_getter=float32_variable_storage_getter):
+    with tf.variable_scope("box_net"):
         with slim.arg_scope(resnet_v2.resnet_arg_scope()):
             out, end_points = resnet_v2.resnet_v2_50(inputs, num_classes=None, global_pool = False, reuse=tf.AUTO_REUSE, is_training=is_training)
             attn = tf.layers.conv2d(out,2048,[1,1],activation=tf.nn.sigmoid,name='attn-sigmoid',reuse=tf.AUTO_REUSE)
