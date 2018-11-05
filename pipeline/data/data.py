@@ -38,11 +38,11 @@ class Data:
                         tf.string,
                         tf.int64),
                     output_shapes=(
-                        tf.TensorShape([self.batch_size,416,416,4]),
-                        tf.TensorShape([self.batch_size,4]),
-                        tf.TensorShape([self.batch_size,1]),
-                        tf.TensorShape([self.batch_size,1]),
-                        tf.TensorShape([self.batch_size,1]))
+                        tf.TensorShape([416,416,4]),
+                        tf.TensorShape([4]),
+                        tf.TensorShape([]),
+                        tf.TensorShape([]),
+                        tf.TensorShape([]))
                     )
             dataset = dataset.apply(tf.contrib.data.map_and_batch(
                 map_func = _identity, batch_size=self.batch_size))
@@ -92,14 +92,7 @@ class Data:
         np.random.shuffle(image_index)
         def _generator():
             while True:
-                imgs, boxes, cs, img_names, indices = [],[],[],[],[]
-                for _ in range(self.batch_size):
-                    ind = np.random.choice(image_index)
-                    img, box, c, img_name, index = get_instance(self,ind)
-                    imgs.append(img)
-                    boxes.append(box)
-                    cs.append(c)
-                    img_names.append(img_name)
-                    indices.append(index)
-                yield (np.array(imgs),np.array(boxes),np.array(cs),np.array(img_names),np.array(indices))
+                ind = np.random.choice(image_index)
+                img, box, c, img_name, index = get_instance(self,ind)
+                yield (np.array(img),np.array(box),c,img_name,index)
         return _generator
