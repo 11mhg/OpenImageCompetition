@@ -366,7 +366,7 @@ def get_instance(self,ind):
     mask = generator_masks(img_name,rand_int)
     img = np.concatenate((img,mask),axis=-1)
 
-    return img, box, c
+    return img, box, c, img_name, rand_int
 
 
 def generator_masks(img_name,ind):
@@ -389,15 +389,19 @@ def generator(self):
     np.random.shuffle(image_index) 
     def _generator():
         while True:
-            imgs, boxes, cs = [],[],[]
+            imgs, boxes, cs, img_names, indices = [],[],[],[],[]
             for _ in range(self.batch_size):
                 ind = np.random.choice(image_index)
-                img, box, c = get_instance(self,ind)
+                img, box, c, img_name, rand_int = get_instance(self,ind)
                 imgs.append(img)
                 boxes.append(box)
                 cs.append(c)
-            yield (np.array(imgs),np.array(boxes),np.array(cs))
+                img_names.append(img_name)
+                indices.append(rand_int)
+            yield (np.array(imgs),np.array(boxes),np.array(cs),np.array(img_names),np.array(indices))
 
-    return _generator()
+    return _generator
 
-
+#identity function used for map and batch so we can map properly
+def _identity(image,label,box,img_name,index):
+    return image,label,box,img_name,index

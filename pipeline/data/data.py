@@ -5,7 +5,7 @@ import tensorflow as tf
 from .bbox import *
 import os
 from tqdm import tqdm
-from .tfrecord_utils import input_fn, generator
+from .tfrecord_utils import input_fn, _identity, generator_masks, get_instance
 
 class Data:
     def __init__(self, classification=False, classes_text=None, batch_size=32, shuffle_buffer_size=4, prefetch_buffer_size=1, num_parallel_calls=4, num_parallel_readers=1):
@@ -26,6 +26,29 @@ class Data:
 
     def get_batch(self,filenames=None):
         return input_fn(self,filenames)
+
+    def get_gen_batch(self,filedir,data_type='val'):
+        self.get_oid(filedir,data_type)
+        with tf.device('/cpu:0'):
+            dataset = tf.data.Dataset.from_generator(self.get_generator(),
+                    output_types=(
+                        tf.float32,
+                        tf.float32,
+                        tf.int64,
+                        tf.string,
+                        tf.int64),
+                    output_shapes=(
+                        tf.TensorShape([self.batch_size,416,416,4]),
+                        tf.TensorShape([self.batch_size,4]),
+                        tf.TensorShape([self.batch_size,1]),
+                        tf.TensorShape([self.batch_size,1]),
+                        tf.TensorShape([self.batch_size,1]))
+                    )
+            dataset = dataset.apply(tf.contrib.data.map_and_batch(
+                map_func = _identity, batch_size=self.batch_size))
+            dataset = dataset.prefetch(buffer_size=self.prefetch_buffer_size)
+        return dataset
+
 
     def get_oid(self,filedir,data_type='train'):
         import csv
@@ -61,6 +84,22 @@ class Data:
         self.labels = np.array(self.labels)
         self.num_images = self.images.shape[0]
 
-    def get_generator(self,filedir,data_type='train'):
-        self.get_oid(filedir,data_type)
-        return generator(self)
+    def get_generator(self):
+        self.masked = np.array([None]*self.num_images)
+        for i in range(self.masked.shape[0]):
+            self.masked[i] = [False] * (self.labels[i].shape[0])
+        image_index = np.arange(self.num_images)
+        np.random.shuffle(image_index)
+        def _generator():
+            while True:
+                imgs, boxes, cs, img_names, indices = [],[],[],[],[]
+                for _ in range(self.batch_size):
+                    ind = np.random.choice(image_index)
+                    img, box, c, img_name, index = get_instance(self,ind)
+                    imgs.append(img)
+                    boxes.append(box)
+                    cs.append(c)
+                    img_names.append(img_name)
+                    indices.append(index)
+                yield (np.array(imgs),np.array(boxes),np.array(cs),np.array(img_names),np.array(indices))
+        return _generator
