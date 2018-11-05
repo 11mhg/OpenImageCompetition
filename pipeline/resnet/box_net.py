@@ -35,19 +35,13 @@ class Box_net():
         self.val_image, self.val_label, self.val_box = self.val_iter.get_next()
 
         #put labels in -1 to 1 range
-        self.train_box = tf.multiply(self.train_box,tf.constant(2,dtype=tf.float32)) - tf.constant(1,dtype=tf.float32)
-        self.val_box = tf.multiply(self.val_box,tf.constant(2,dtype=tf.float32)) - tf.constant(1,dtype=tf.float32)
-
-        t_xy = self.train_box[:,:2]
+        t_xy = (self.train_box[:,:2] * 2.0) - 1.0
         t_wh = tf.log(self.train_box[:,2:])
         self.train_box = tf.concat([t_xy,t_wh],-1)
 
-        v_xy = self.val_box[:,:2]
+        v_xy = (self.val_box[:,:2] * 2.0) - 1.0
         v_wh = tf.log(self.val_box[:,2:])
         self.val_box = tf.concat([v_xy, v_wh],-1)
-
-        print(self.train_box)
-        input("Wait")
 
     def train_step(self, sess, train_op, metrics_op, global_step):
         start_time = time.time()

@@ -10,4 +10,4 @@
 #SBATCH --mail-type=ALL
 
 
-time python3 resnet.py --batch_size 32 --data_dir ../Dataset/OpenImage/tfrecords/*train* --val_dir ../Dataset/OpenImage/tfrecords/*val* --labels ./OpenImage.txt --model_dir ./open_dir/ --num_epochs 55 --steps_per_epoch 50000 --logs ./logs/
+time python3 train.py --batch_size 32 --data_dir /home/mhg1/Dataset/OpenImage/tfrecords/*train* --val_dir /home/mhg1/Dataset/OpenImage/tfrecords/*val* --labels ./OpenImage.txt --model_dir ./open_dir/ --num_epochs 55 --steps_per_epoch 50000 --logs ./logs/
