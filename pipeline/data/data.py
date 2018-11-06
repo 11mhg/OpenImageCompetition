@@ -6,6 +6,7 @@ from .bbox import *
 import os
 from tqdm import tqdm
 from .tfrecord_utils import input_fn, _identity, generator_masks, get_instance
+import pickle
 
 class Data:
     def __init__(self, classification=False, classes_text=None, batch_size=32, shuffle_buffer_size=4, prefetch_buffer_size=1, num_parallel_calls=4, num_parallel_readers=1):
@@ -36,10 +37,12 @@ class Data:
                         tf.float32,
                         tf.int64,
                         tf.string,
+                        tf.int64,
                         tf.int64),
                     output_shapes=(
                         tf.TensorShape([416,416,4]),
                         tf.TensorShape([4]),
+                        tf.TensorShape([]),
                         tf.TensorShape([]),
                         tf.TensorShape([]),
                         tf.TensorShape([]))
@@ -54,6 +57,13 @@ class Data:
         import csv
         self.images = []
         self.labels = []
+        image_save_loc = filedir+'annotations/{}-images-saved.p'.format(data_type)
+        labels_save_loc = filedir+'annotations/{}-labels-saved.p'.format(data_type)
+        if os.path.exists(image_save_loc) and os.path.exists(labels_save_loc):
+            self.images = pickle.load(open(image_save_loc,"rb"))
+            self.labels = pickle.load(open(labels_save_loc,"rb"))
+            self.num_images = self.images.shape[0]
+            return 
         annotations_file = filedir+'annotations/{}-bbox.csv'.format(data_type)
         with open(annotations_file,'r') as csvfile:
             bbox_reader = csv.reader(csvfile,delimiter = ',')
@@ -82,10 +92,13 @@ class Data:
                 self.labels.append(boxes)
         self.images = np.array(self.images)
         self.labels = np.array(self.labels)
+        pickle.dump(self.images, open(image_save_loc,"wb"))
+        pickle.dump(self.labels, open(labels_save_loc,"wb"))
         self.num_images = self.images.shape[0]
 
     def get_generator(self):
         self.masked = np.array([None]*self.num_images)
+        self.all_sorted_inds=np.array([None]*self.num_images)
         for i in range(self.masked.shape[0]):
             self.masked[i] = [False] * (self.labels[i].shape[0])
         image_index = np.arange(self.num_images)
@@ -93,6 +106,6 @@ class Data:
         def _generator():
             while True:
                 ind = np.random.choice(image_index)
-                img, box, c, img_name, index = get_instance(self,ind)
-                yield (np.array(img),np.array(box),c,img_name,index)
+                img, box, c, img_name, random_ind = get_instance(self,ind)
+                yield (np.array(img),np.array(box),c,img_name,ind, random_ind)
         return _generator

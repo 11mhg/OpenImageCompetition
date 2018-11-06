@@ -331,17 +331,21 @@ def get_instance(self,ind):
     img_name = self.images[ind]
     labels = self.labels[ind]
     boxes = np.zeros((labels.shape[0],4),np.float32)
-    classes = []
-    for e, box in enumerate(labels):
-        boxes[e,0] = box.x0
-        boxes[e,1] = box.y0
-        boxes[e,2] = box.x1
-        boxes[e,3] = box.y1
-        classes.append(box.label)
 
-    classes = np.array(classes)
-    areas = np.trim_zeros((boxes[:,2]-boxes[:,0])*(boxes[:,3]-boxes[:,1]))
-    sorted_inds = np.argsort(areas)
+    if self.all_sorted_inds[ind]==None:
+        classes = []
+        for e, box in enumerate(labels):
+            boxes[e,0] = box.x0
+            boxes[e,1] = box.y0
+            boxes[e,2] = box.x1
+            boxes[e,3] = box.y1
+            classes.append(box.label)
+        classes = np.array(classes)
+        areas = np.trim_zeros((boxes[:,2]-boxes[:,0])*(boxes[:,3]-boxes[:,1]))
+        sorted_inds = np.argsort(areas)
+        self.all_sorted_inds[ind] = sorted_inds
+    else:
+        sorted_inds = self.all_sorted_inds[ind]
 
     self.masked[ind][sorted_inds[0]] = True
     rand_int = random.randint(0,sorted_inds.shape[0]-1)
@@ -380,28 +384,6 @@ def generator_masks(img_name,ind):
     if not os.path.exists(path):
         raise ValueError("Problem during reading of masks, cannot find mask at path:\n"+str(path))
     return np.load(path)
-
-def generator(self): 
-    self.masked = np.array([None]*self.num_images)
-    for i in range(self.masked.shape[0]):
-        self.masked[i] = [False] * (self.labels[i].shape[0])
-    image_index = np.arange(self.num_images)
-    np.random.shuffle(image_index) 
-    def _generator():
-        while True:
-            imgs, boxes, cs, img_names, indices = [],[],[],[],[]
-            for _ in range(self.batch_size):
-                ind = np.random.choice(image_index)
-                img, box, c, img_name, rand_int = get_instance(self,ind)
-                imgs.append(img)
-                boxes.append(box)
-                cs.append(c)
-                img_names.append(img_name)
-                indices.append(rand_int)
-            yield (np.array(imgs),np.array(boxes),np.array(cs),np.array(img_names),np.array(indices))
-
-    return _generator
-
 #identity function used for map and batch so we can map properly
-def _identity(image,label,box,img_name,index):
-    return image,label,box,img_name,index
+def _identity(image,label,box,img_name,ind, random_ind):
+    return image,label,box,img_name,ind, random_ind
