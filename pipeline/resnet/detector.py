@@ -197,12 +197,12 @@ class Detector():
                         t1 = time.time()
                         if step % 10==0: 
                             images,boxes,labels,img_names,img_indices,rand_indices = self.get_train_batch()
-                            loss, step_count, _, attention,train_summaries = sess.run([box_train_op,global_step,rmse_update,attn,train_boxsumm_op],
+                            b_loss, step_count, _, attention,train_b_summaries = sess.run([box_train_op,global_step,rmse_update,attn,train_boxsumm_op],
                                     feed_dict={self.img:images,self.box:boxes,self.training:True})
-                            summary_writer.add_summary(train_summaries,step_count)
+                            summary_writer.add_summary(train_b_summaries,step_count)
                         else:
                             images,boxes,labels,img_names,img_indices,rand_indices=self.get_train_batch()
-                            loss, step_count, _, attention = sess.run([box_train_op,global_step,rmse_update,attn],
+                            b_loss, step_count, _, attention = sess.run([box_train_op,global_step,rmse_update,attn],
                                     feed_dict={self.img:images,self.box:boxes,self.training:True})
                         for i in range(images.shape[0]):
                             img_name = img_names[i]
@@ -219,37 +219,65 @@ class Detector():
                                 np.save(filedir,attention_map)
                                 self.train_data.masked[img_index][self.train_data.all_sorted_inds[img_index][rand_index]] = True
                         time_elapsed = time.time() - t1
-                        if step % 10 == 0:
-                            class_imgs = []
-                            for i in range(images.shape[0]):
-                                temp_img = images[i,:,:,:]
-                                temp_attn = attention[i,:,:,:]
-                                c_img = np.concatenate((temp_img,temp_attn),axis=-1)
-                                b = boxes[i,:]
-                                xmin = b[0]*c_img.shape[1]
-                                ymin = b[1]*c_img.shape[0]
-                                xmax = b[2]*c_img.shape[1]
-                                ymax = b[3]*c_img.shape[0]
 
-                                c_img = c_img[ymin:ymax,xmin:xmax,:]
-
-                                w = xmax - xmin
-                                h = ymax - ymin
-
-                                scale_factor_h = 200.0/float(h)
-                                scale_factor_w = 200.0/float(w)
-
-                                scale_factor = min(scale_factor_h,scale_factor_w)
-                                c_img = cv2.resize(c_img,(w*scale_factor,h*scale_factor))
-
-
+                        class_imgs = self.prep_class_images(images,attention,boxes) 
 
                         if step % 10 == 0:
-                            logging.info('global_step %s: box_loss %.4f (%.2f sec/step)',step_count,loss,time_elapsed)
+                            c_loss, _, train_c_summaries = sess.run([class_train_op, accuracy_update, 
+                                train_classsumm_op],feed_dict={self.training:True,self.class_img:class_imgs,
+                                self.label:labels})
+                            summary_writer.add_summary(train_c_summaries,step_count)
+                        else:
+                            c_loss, _ = sess.run([class_train_op, accuracy_update],
+                                    feed_dict={self.training:True,self.class_img:class_imgs,self.labels:labels})
+
+                        if step % 10 == 0:
+                            logging.info('global_step %s: box_loss %.4f , class_loss %.4f (%.2f sec/step)',step_count,b_loss,c_loss,time_elapsed)
                     except KeyboardInterrupt:
                         logging.info("Keyboard interrupt")
                         sys.exit(0)
-
-
                 logging.info('Epoch %s/%s', epoch+1, self.flags.num_epochs)
+                learning_rate_value, rmse_value, accuracy_value = sess.run([lr, rmse, accuracy],
+                        feed_dict={self.training:False})
+                logging.info('Current lr: %s',learning_rate_value)
+                logging.info('Current RMSE: %s',rmse_value)
+                logging.info('Current Accuracy: %s',accuracy_value)
+
+                logging.info("Validation Beginning")
+
+
+    def prep_class_images(self,images,attention,boxes):
+        class_imgs = []
+        for i in range(images.shape[0]):
+            temp_img = images[i,:,:,:]
+            temp_attn = attention[i,:,:,:]
+            c_img = np.concatenate((temp_img,temp_attn),axis=-1)
+            b = boxes[i,:]
+            xmin = b[0]*c_img.shape[1]
+            ymin = b[1]*c_img.shape[0]
+            xmax = b[2]*c_img.shape[1]
+            ymax = b[3]*c_img.shape[0]
+
+            c_img = c_img[ymin:ymax,xmin:xmax,:]
+
+            w = xmax - xmin
+            h = ymax - ymin
+
+            scale_factor_h = 200.0/float(h)
+            scale_factor_w = 200.0/float(w)
+
+            scale_factor = min(scale_factor_h,scale_factor_w)
+            c_img = cv2.resize(c_img,(int(w*scale_factor),int(h*scale_factor)))
+            w = c_img.shape[1]
+            h = c_img.shape[0]
+            delta_w = 200-w
+            delta_h = 200-h
+            top, bottom = delta_h // 2 , delta_h - (delta_h//2)
+            left, right = delta_w // 2 , delta_w - (delta_w//2)
+
+            color = [0,0,0]
+            c_img = cv2.copyMakeBorder(c_img, top,bottom,left,right,cv2.BORDER_CONSTANT,value=color)
+            class_imgs.append(c_img)
+        class_imgs = np.array(class_imgs,np.float32)
+        return class_imgs
 
