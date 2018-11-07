@@ -220,12 +220,36 @@ class Detector():
                                 self.train_data.masked[img_index][self.train_data.all_sorted_inds[img_index][rand_index]] = True
                         time_elapsed = time.time() - t1
                         if step % 10 == 0:
-                            logging.info('global_step %s: loss %.4f (%.2f sec/step)',step_count,loss,time_elapsed)
+                            class_imgs = []
+                            for i in range(images.shape[0]):
+                                temp_img = images[i,:,:,:]
+                                temp_attn = attention[i,:,:,:]
+                                c_img = np.concatenate((temp_img,temp_attn),axis=-1)
+                                b = boxes[i,:]
+                                xmin = b[0]*c_img.shape[1]
+                                ymin = b[1]*c_img.shape[0]
+                                xmax = b[2]*c_img.shape[1]
+                                ymax = b[3]*c_img.shape[0]
+
+                                c_img = c_img[ymin:ymax,xmin:xmax,:]
+
+                                w = xmax - xmin
+                                h = ymax - ymin
+
+                                scale_factor_h = 200.0/float(h)
+                                scale_factor_w = 200.0/float(w)
+
+                                scale_factor = min(scale_factor_h,scale_factor_w)
+                                c_img = cv2.resize(c_img,(w*scale_factor,h*scale_factor))
 
 
+
+                        if step % 10 == 0:
+                            logging.info('global_step %s: box_loss %.4f (%.2f sec/step)',step_count,loss,time_elapsed)
                     except KeyboardInterrupt:
                         logging.info("Keyboard interrupt")
                         sys.exit(0)
+
 
                 logging.info('Epoch %s/%s', epoch+1, self.flags.num_epochs)
 
