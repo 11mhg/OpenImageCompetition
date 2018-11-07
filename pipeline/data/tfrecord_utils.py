@@ -331,16 +331,16 @@ def get_instance(self,ind):
     img_name = self.images[ind]
     labels = self.labels[ind]
     boxes = np.zeros((labels.shape[0],4),np.float32)
+    classes = []
+    for e, box in enumerate(labels):
+        boxes[e,0] = box[0]
+        boxes[e,1] = box[1]
+        boxes[e,2] = box[2]
+        boxes[e,3] = box[3]
+        classes.append(box[4])
+    classes = np.array(classes)
 
     if self.all_sorted_inds[ind]==None:
-        classes = []
-        for e, box in enumerate(labels):
-            boxes[e,0] = box.x0
-            boxes[e,1] = box.y0
-            boxes[e,2] = box.x1
-            boxes[e,3] = box.y1
-            classes.append(box.label)
-        classes = np.array(classes)
         areas = np.trim_zeros((boxes[:,2]-boxes[:,0])*(boxes[:,3]-boxes[:,1]))
         sorted_inds = np.argsort(areas)
         self.all_sorted_inds[ind] = sorted_inds

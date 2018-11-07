@@ -7,6 +7,11 @@ import os
 from tqdm import tqdm
 from .tfrecord_utils import input_fn, _identity, generator_masks, get_instance
 import pickle
+import time
+from prefetch_generator import background
+
+def pickle_load(filename):
+    return pickle.load(open(filename,"rb"))
 
 class Data:
     def __init__(self, classification=False, classes_text=None, batch_size=32, shuffle_buffer_size=4, prefetch_buffer_size=1, num_parallel_calls=4, num_parallel_readers=1):
@@ -52,7 +57,6 @@ class Data:
             dataset = dataset.prefetch(buffer_size=self.prefetch_buffer_size)
         return dataset
 
-
     def get_oid(self,filedir,data_type='train'):
         import csv
         self.images = []
@@ -68,8 +72,12 @@ class Data:
         with open(annotations_file,'r') as csvfile:
             bbox_reader = csv.reader(csvfile,delimiter = ',')
             next(bbox_reader)
+            num_lines = sum(1 for row in bbox_reader)
+        with open(annotations_file,'r') as csvfile: 
+            bbox_reader = csv.reader(csvfile,delimiter=',')
+            next(bbox_reader)
             dict_annot={}
-            pbar = tqdm(bbox_reader)
+            pbar = tqdm(bbox_reader,total=num_lines)
             pbar.set_description('Reading Annotation')
             for elem in pbar:
                 filename=elem[0]
@@ -84,7 +92,7 @@ class Data:
                     dict_annot[filename] = []
                     height=1
                     width=1
-                dict_annot[filename].append(box)
+                dict_annot[filename].append([box.x0,box.y0,box.x1,box.y1,box.label])
             for filename in dict_annot.keys():
                 image_name = filedir+data_type+'/'+filename+'.jpg'
                 boxes = np.array(dict_annot[filename])
@@ -109,3 +117,38 @@ class Data:
                 img, box, c, img_name, random_ind = get_instance(self,ind)
                 yield (np.array(img),np.array(box),c,img_name,ind, random_ind)
         return _generator
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -44,11 +44,13 @@ def get_class_resnet(inputs,num_classes,is_training=False):
 
 
 def get_box_resnet(inputs, is_training=False):
-    with tf.variable_scope("box_net"):
+    with tf.variable_scope("box_net",custom_getter=float32_variable_storage_getter):
         with slim.arg_scope(resnet_v2.resnet_arg_scope()):
             out, end_points = resnet_v2.resnet_v2_50(inputs, num_classes=None, global_pool = False, reuse=tf.AUTO_REUSE, is_training=is_training)
-            attn = tf.layers.conv2d(out,2048,[1,1],activation=tf.nn.sigmoid,name='attn-sigmoid',reuse=tf.AUTO_REUSE)
+            l2_reg = tf.contrib.layers.l2_regularizer(scale=0.1)
+            attn = tf.layers.conv2d(out,2048,[1,1],activation=None,name='attn',kernel_regularizer=l2_reg,reuse=tf.AUTO_REUSE)
             attn = tf.reduce_mean(attn,[3],name='attn_pool',keepdims=True)
+
 #            attn = tf.layers.conv2d(out, 64, [1,1], padding='same',activation=tf.nn.leaky_relu,name='attn1',reuse=tf.AUTO_REUSE)
 #            attn = tf.layers.conv2d(attn, 32, [1,1], padding='same',activation=tf.nn.leaky_relu,name='attn2',reuse=tf.AUTO_REUSE)
 #            attn = tf.layers.conv2d(attn, 1,[1,1],padding='valid', activation=tf.nn.sigmoid,name='attn3',reuse=tf.AUTO_REUSE)
