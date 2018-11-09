@@ -340,7 +340,7 @@ def get_instance(self,ind):
         classes.append(box[4])
     classes = np.array(classes)
 
-    if self.all_sorted_inds[ind]==None:
+    if self.all_sorted_inds[ind] is None:
         areas = np.trim_zeros((boxes[:,2]-boxes[:,0])*(boxes[:,3]-boxes[:,1]))
         sorted_inds = np.argsort(areas)
         self.all_sorted_inds[ind] = sorted_inds
@@ -360,7 +360,6 @@ def get_instance(self,ind):
     img = cv2.resize(img,(416,416))
 
     box = boxes[sorted_inds[rand_int]]
-    box *= 416.0
     b_w = box[2] - box[0]
     b_h = box[3] - box[1]
     cx = box[0] + (b_w/2.)
@@ -368,6 +367,8 @@ def get_instance(self,ind):
     box = [cx,cy,b_w,b_h]
     c = classes[sorted_inds[rand_int]]
     mask = generator_masks(img_name,rand_int)
+    mask = cv2.resize(mask, (416,416))
+    mask = np.expand_dims(mask,-1)
     img = np.concatenate((img,mask),axis=-1)
 
     return img, box, c, img_name, rand_int

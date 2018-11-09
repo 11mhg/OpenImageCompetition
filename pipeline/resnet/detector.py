@@ -74,10 +74,11 @@ class Detector():
 
         if self.dtype == 'float16':
             self.img = tf.cast(self.img, tf.float16)
-        self.training=tf.placeholder(tf.bool,name="training")
+        self.box_training=tf.placeholder(tf.bool,name="box_training")
+        self.class_training=tf.placeholder(tf.bool,name="class_training")
         logging.info("Initializing box net")
         with tf.device('/gpu:0'):
-            box_out, attn = get_box_resnet(self.img,is_training=self.training)
+            box_out, attn = get_box_resnet(self.img,is_training=self.box_training)
             logging.info("Done with box net")
             if self.dtype == 'float16':
                 box_out = tf.cast(box_out,tf.float32)
@@ -106,6 +107,8 @@ class Detector():
             logging.info("Box net optimizer initialized")
             rmse, rmse_update = tf.metrics.root_mean_squared_error(self.box,box_out)
 
+            val_rmse, val_rmse_update = tf.metrics.root_mean_squared_error(self.box,box_out)
+            
             #box summaries
             train_image_summ = tf.summary.image('train/box/input_images',self.img[:5,:,:,:3])
             train_mask_summ = tf.summary.image('train/box/input_masks',self.img[:5,:,:,3:])
@@ -121,9 +124,9 @@ class Detector():
             val_mask_summ = tf.summary.image('val/box/input_masks',self.img[:5,:,:,3:])
             val_attn_summ = tf.summary.image('val/attn',attn[:5,:,:,:])
             val_loss_summ = tf.summary.scalar('val/box/val_loss',box_loss)
-            val_rmse_summ = tf.summary.scalar('val/rmse',rmse)
+            val_rmse_summ = tf.summary.scalar('val/rmse',val_rmse)
 
-            val_box_op = tf.summary.merge([val_image_summ,val_mask_summ,val_attn_summ,
+            val_boxsumm_op = tf.summary.merge([val_image_summ,val_mask_summ,val_attn_summ,
                                            val_loss_summ,val_rmse_summ])
         logging.info("Box net summaries merged")
         #classifier
@@ -131,7 +134,7 @@ class Detector():
             self.class_img = tf.cast(self.class_img,tf.float16)
         logging.info("Beginning classifier initialization")
         with tf.device('/gpu:1'):
-            class_logits, class_endpoints = get_class_resnet(self.class_img,self.num_classes,is_training=self.training)
+            class_logits, class_endpoints = get_class_resnet(self.class_img,self.num_classes,is_training=self.class_training)
             one_hot_labels = tf.one_hot(self.label,self.num_classes)
             class_logits = tf.squeeze(class_logits,[1,2])
 
@@ -154,21 +157,22 @@ class Detector():
 
             accuracy, accuracy_update = tf.metrics.accuracy(self.label, class_predictions)
 
+            val_accuracy, val_accuracy_update = tf.metrics.accuracy(self.label,class_predictions)
              #classifier summaries
             train_class_image_summ = tf.summary.image('train/class/input_images',self.class_img[:5,:,:,:3])
             train_class_mask_summ = tf.summary.image('train/class/input_masks',self.class_img[:5,:,:,3:])
             train_class_loss_summ = tf.summary.scalar('train/class/train_loss',class_loss)
             train_class_acc_summ = tf.summary.scalar('train/accuracy',accuracy)
 
-            train_class_op = tf.summary.merge([train_class_image_summ, train_class_mask_summ,
+            train_classsumm_op = tf.summary.merge([train_class_image_summ, train_class_mask_summ,
                                              train_class_loss_summ, train_class_acc_summ])
 
             val_class_image_summ = tf.summary.image('val/class/input_images',self.class_img[:5,:,:,:3])
             val_class_mask_summ = tf.summary.image('val/class/input_masks',self.class_img[:5,:,:,3:])
             val_class_loss_summ = tf.summary.scalar('val/class/val_loss',class_loss)
-            val_class_acc_summ = tf.summary.scalar('val/class/accuracy',accuracy)
+            val_class_acc_summ = tf.summary.scalar('val/class/accuracy',val_accuracy)
 
-            val_class_op = tf.summary.merge([val_class_image_summ, val_class_mask_summ,
+            val_classsumm_op = tf.summary.merge([val_class_image_summ, val_class_mask_summ,
                                            val_class_loss_summ, val_class_acc_summ])
         logging.info("Classifier summaries merged")
         saver = tf.train.Saver(max_to_keep=4)
@@ -188,34 +192,28 @@ class Detector():
 
             summary_writer = tf.summary.FileWriter(self.flags.logs,graph=tf.get_default_graph())
 
-
-            val_counter = 0
-            avg_time=0
             for epoch in range(self.flags.num_epochs):
                 for step in range(num_steps_per_epoch):
                     try:
                         t1 = time.time()
+                        images,boxes,labels,img_names,img_indices,rand_indices = self.get_train_batch()
                         if step % 10==0: 
-                            images,boxes,labels,img_names,img_indices,rand_indices = self.get_train_batch()
                             b_loss, step_count, _, attention,train_b_summaries = sess.run([box_train_op,global_step,rmse_update,attn,train_boxsumm_op],
-                                    feed_dict={self.img:images,self.box:boxes,self.training:True})
+                                    feed_dict={self.img:images,self.box:boxes,self.box_training:True,self.class_training:False})
                             summary_writer.add_summary(train_b_summaries,step_count)
-                        else:
-                            images,boxes,labels,img_names,img_indices,rand_indices=self.get_train_batch()
+                        else: 
                             b_loss, step_count, _, attention = sess.run([box_train_op,global_step,rmse_update,attn],
-                                    feed_dict={self.img:images,self.box:boxes,self.training:True})
+                                    feed_dict={self.img:images,self.box:boxes,self.box_training:True,self.class_training:False})
                         for i in range(images.shape[0]):
                             img_name = img_names[i]
                             img_index = img_indices[i]
                             rand_index = rand_indices[i]
-                            if rand_index > 0:
-                                logging.info("*"*128*128)
                             attention_map = attention[i,:,:,:]
                             attention_map = cv2.resize(attention_map,(416,416))
                             attention_map = np.array(attention_map,np.float32)
                             if rand_index+1 < self.train_data.all_sorted_inds[img_index].shape[0]:
                                 filedir = self.flags.data_dir+'masks/'+os.path.splitext(os.path.basename(
-                                    img_name))[0]+'_'+str(rand_index)+'.npy'
+                                    img_name))[0]+'_'+str(rand_index+1)+'.npy'
                                 np.save(filedir,attention_map)
                                 self.train_data.masked[img_index][self.train_data.all_sorted_inds[img_index][rand_index]] = True
                         time_elapsed = time.time() - t1
@@ -224,12 +222,13 @@ class Detector():
 
                         if step % 10 == 0:
                             c_loss, _, train_c_summaries = sess.run([class_train_op, accuracy_update, 
-                                train_classsumm_op],feed_dict={self.training:True,self.class_img:class_imgs,
-                                self.label:labels})
+                                train_classsumm_op],feed_dict={self.box_training:False,self.class_training:True,self.class_img:class_imgs,
+                                    self.label:labels,self.img:images})
                             summary_writer.add_summary(train_c_summaries,step_count)
                         else:
                             c_loss, _ = sess.run([class_train_op, accuracy_update],
-                                    feed_dict={self.training:True,self.class_img:class_imgs,self.labels:labels})
+                                    feed_dict={self.class_training:True,self.box_training:False,self.class_img:class_imgs,
+                                        self.label:labels,self.img:images})
 
                         if step % 10 == 0:
                             logging.info('global_step %s: box_loss %.4f , class_loss %.4f (%.2f sec/step)',step_count,b_loss,c_loss,time_elapsed)
@@ -238,29 +237,99 @@ class Detector():
                         sys.exit(0)
                 logging.info('Epoch %s/%s', epoch+1, self.flags.num_epochs)
                 learning_rate_value, rmse_value, accuracy_value = sess.run([lr, rmse, accuracy],
-                        feed_dict={self.training:False})
+                        feed_dict={self.box_training:False,self.class_training:False})
                 logging.info('Current lr: %s',learning_rate_value)
                 logging.info('Current RMSE: %s',rmse_value)
                 logging.info('Current Accuracy: %s',accuracy_value)
 
                 logging.info("Validation Beginning")
 
+                for step in range(self.val_data.images.shape[0]):
+                    try:
+                        images,boxes,labels,img_names,img_indices,rand_indices = self.get_val_batch()
+                        if step % 10 == 0:
+                            b_loss, _, attention,val_b_summaries = sess.run([box_loss, val_rmse_update,attn,val_boxsumm_op],
+                                    feed_dict={self.img:images,self.box:boxes,self.box_training:False,self.class_training:False})
+                            summary_writer.add_summary(val_b_summaries,step)
+                        else:
+                            b_loss, _, attention = sess.run([box_loss, val_rmse_update,attn],
+                                    feed_dict={self.img:images,self.box:boxes,self.box_training:False,self.class_training:False})
+                        for i in range(images.shape[0]):
+                            img_name = img_names[i]
+                            img_index = img_indices[i]
+                            rand_index = rand_indices[i]
+                            attention_map = attention[i,:,:,:]
+                            attention_map = cv2.resize(attention_map,(416,416))
+                            attention_map = np.array(attention_map,np.float32)
+                            if rand_index+1 < self.val_data.all_sorted_inds[img_index].shape[0]:
+                                filedir = self.flags.data_dir+'masks/'+os.path.splitext(os.path.basename(
+                                    img_name))[0]+'_'+str(rand_index+1)+'.npy'
+                                np.save(filedir,attention_map)
+                                self.val_data.masked[img_index][self.val_data.all_sorted_inds[img_index][rand_index]] = True
+
+                        time_elapsed = time.time() - t1
+                        class_imgs = self.prep_class_images(images,attention,boxes)
+
+                        if step % 10 == 0:
+                            c_loss, _, val_c_summaries = sess.run([class_loss, val_accuracy_update, 
+                                val_classsumm_op],feed_dict={self.box_training:False,self.class_training:False,self.class_img:class_imgs,
+                                    self.label:labels,self.img:images})
+                            summary_writer.add_summary(val_c_summaries,step_count)
+                        else:
+                            c_loss, _ = sess.run([class_loss, val_accuracy_update],
+                                    feed_dict={self.box_training:False,self.class_training:False,self.class_img:class_imgs,self.label:labels,
+                                        self.img:images})
+                        if step % 10 == 0:
+                            logging.info('validation step %s: box_loss %.4f , class_loss %.4f (%.2f sec/step)',step ,b_loss,c_loss,time_elapsed)
+                    except KeyboardInterrupt:
+                        logging.info('Interrupted by user, exiting')
+                        sys.exit(0)
+
+                val_rmse_value, val_accuracy_value = sess.run([val_rmse, val_accuracy],
+                        feed_dict={self.box_training:False,self.class_training:False})
+
+                logging.info("Validation completed")
+                logging.info("Validation RMSE: %s",val_rmse_value)
+                logging.info("Validation Accuracy: %s",val_accuracy_value)
+
+                flag = False
+                if val_rmse_value < prev_val_rmse:
+                    logging.info("Better RMSE value, saving")
+                    prev_val_rmse = val_rmse_value
+                    flag = True
+                if val_accuracy_value > prev_accuracy_val:
+                    logging.info("Better Accuracy value, saving")
+                    prev_accuracy_val = val_accuracy_value
+                    flag = True
+                if flag:
+                    saver.save(sess, self.checkpoint_file, global_step = global_step)
+                logging.info("*"*16)
+            logging.info("Done Training.")
+
+
 
     def prep_class_images(self,images,attention,boxes):
         class_imgs = []
         for i in range(images.shape[0]):
             temp_img = images[i,:,:,:]
-            temp_attn = attention[i,:,:,:]
-            c_img = np.concatenate((temp_img,temp_attn),axis=-1)
+#            temp_attn = cv2.resize(attention[i,:,:,:],(temp_img.shape[1],temp_img.shape[0]))
+#            temp_attn = np.expand_dims(temp_attn,-1) 
+            c_img = temp_img#np.concatenate((temp_img,temp_attn),axis=-1)
             b = boxes[i,:]
-            xmin = b[0]*c_img.shape[1]
-            ymin = b[1]*c_img.shape[0]
-            xmax = b[2]*c_img.shape[1]
-            ymax = b[3]*c_img.shape[0]
+
+            c_x = b[0]*c_img.shape[1]
+            c_y = b[1]*c_img.shape[0]
+            b_w = b[2]*c_img.shape[1]
+            b_h = b[3]*c_img.shape[0]
+
+            xmin = int(c_x - (b_w/2.))
+            ymin = int(c_y - (b_h/2.))
+            xmax = int(c_x + (b_w/2.))
+            ymax = int(c_y + (b_h/2.))
 
             c_img = c_img[ymin:ymax,xmin:xmax,:]
 
-            w = xmax - xmin
+            w = xmax - xmin 
             h = ymax - ymin
 
             scale_factor_h = 200.0/float(h)
@@ -274,8 +343,7 @@ class Detector():
             delta_h = 200-h
             top, bottom = delta_h // 2 , delta_h - (delta_h//2)
             left, right = delta_w // 2 , delta_w - (delta_w//2)
-
-            color = [0,0,0]
+            color = [0,0,0,0]
             c_img = cv2.copyMakeBorder(c_img, top,bottom,left,right,cv2.BORDER_CONSTANT,value=color)
             class_imgs.append(c_img)
         class_imgs = np.array(class_imgs,np.float32)
