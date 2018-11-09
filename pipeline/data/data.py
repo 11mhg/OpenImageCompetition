@@ -8,7 +8,7 @@ from tqdm import tqdm
 from .tfrecord_utils import input_fn, _identity, generator_masks, get_instance
 import pickle
 import time
-from prefetch_generator import background
+
 
 def pickle_load(filename):
     return pickle.load(open(filename,"rb"))
