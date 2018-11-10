@@ -332,11 +332,22 @@ class Detector():
             w = xmax - xmin 
             h = ymax - ymin
 
+            w = max(w,1)
+            h = max(h,1)
+
             scale_factor_h = 200.0/float(h)
             scale_factor_w = 200.0/float(w)
 
             scale_factor = min(scale_factor_h,scale_factor_w)
-            c_img = cv2.resize(c_img,(int(w*scale_factor),int(h*scale_factor)))
+            try:
+                c_img = cv2.resize(c_img,(int(w*scale_factor),int(h*scale_factor)))
+            
+            except:
+                print(scale_factor)
+                print(w,h)
+                print(w*scale_factor,h*scale_factor)
+                print(xmin,ymin,xmax,ymax)
+                print(b)
             w = c_img.shape[1]
             h = c_img.shape[0]
             delta_w = 200-w

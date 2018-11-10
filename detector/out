@@ -1,0 +1,567 @@
+I1109 18:25:49.969508 140651552429824 tf_logging.py:115] Dataset is Ready!
+I1109 18:25:49.970732 140651552429824 tf_logging.py:115] Initializing box net
+I1109 18:25:52.639688 140651552429824 tf_logging.py:115] Done with box net
+I1109 18:25:52.639853 140651552429824 tf_logging.py:115] Creating loss for box net
+I1109 18:25:52.664907 140651552429824 tf_logging.py:115] Box net loss done
+I1109 18:25:57.535809 140651552429824 tf_logging.py:115] Box net optimizer initialized
+I1109 18:25:57.593777 140651552429824 tf_logging.py:115] Box net summaries merged
+I1109 18:25:57.593861 140651552429824 tf_logging.py:115] Beginning classifier initialization
+I1109 18:26:00.268183 140651552429824 tf_logging.py:115] Classifier initialization done
+I1109 18:26:04.909417 140651552429824 tf_logging.py:115] Classifier optimizer created
+I1109 18:26:04.960215 140651552429824 tf_logging.py:115] Classifier summaries merged
+2018-11-09 18:26:05.939021: I tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+2018-11-09 18:26:06.331730: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1432] Found device 0 with properties: 
+name: Tesla V100-PCIE-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.38
+pciBusID: 0000:02:00.0
+totalMemory: 15.78GiB freeMemory: 15.37GiB
+2018-11-09 18:26:06.512789: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1432] Found device 1 with properties: 
+name: GeForce GTX 1080 Ti major: 6 minor: 1 memoryClockRate(GHz): 1.683
+pciBusID: 0000:01:00.0
+totalMemory: 10.92GiB freeMemory: 10.38GiB
+2018-11-09 18:26:06.512861: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1511] Adding visible gpu devices: 0, 1
+2018-11-09 18:26:07.302990: I tensorflow/core/common_runtime/gpu/gpu_device.cc:982] Device interconnect StreamExecutor with strength 1 edge matrix:
+2018-11-09 18:26:07.303071: I tensorflow/core/common_runtime/gpu/gpu_device.cc:988]      0 1 
+2018-11-09 18:26:07.303082: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1001] 0:   N N 
+2018-11-09 18:26:07.303089: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1001] 1:   N N 
+2018-11-09 18:26:07.303686: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1115] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14873 MB memory) -> physical GPU (device: 0, name: Tesla V100-PCIE-16GB, pci bus id: 0000:02:00.0, compute capability: 7.0)
+2018-11-09 18:26:07.304234: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1115] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:1 with 10037 MB memory) -> physical GPU (device: 1, name: GeForce GTX 1080 Ti, pci bus id: 0000:01:00.0, compute capability: 6.1)
+I1109 18:26:12.771555 140651552429824 tf_logging.py:115] Initial variables have been initialized
+I1109 18:26:37.535056 140651552429824 tf_logging.py:115] global_step 0: box_loss 105.3265 , class_loss 8.9776 (4.17 sec/step)
+I1109 18:27:09.708817 140651552429824 tf_logging.py:115] global_step 20: box_loss 96.9292 , class_loss 7.8104 (1.42 sec/step)
+I1109 18:27:25.773380 140651552429824 tf_logging.py:115] global_step 40: box_loss 88.2466 , class_loss 7.4331 (1.36 sec/step)
+I1109 18:27:44.483170 140651552429824 tf_logging.py:115] global_step 60: box_loss 79.4372 , class_loss 6.3037 (1.37 sec/step)
+I1109 18:28:00.761516 140651552429824 tf_logging.py:115] global_step 80: box_loss 70.9280 , class_loss 7.0462 (1.35 sec/step)
+I1109 18:28:17.600353 140651552429824 tf_logging.py:115] global_step 100: box_loss 62.8849 , class_loss 6.7435 (1.35 sec/step)
+I1109 18:28:34.062388 140651552429824 tf_logging.py:115] global_step 120: box_loss 55.5003 , class_loss 6.7550 (1.49 sec/step)
+I1109 18:28:50.874488 140651552429824 tf_logging.py:115] global_step 140: box_loss 48.7665 , class_loss 7.3460 (1.45 sec/step)
+I1109 18:29:07.752719 140651552429824 tf_logging.py:115] global_step 160: box_loss 42.7110 , class_loss 7.8957 (1.28 sec/step)
+I1109 18:29:25.490750 140651552429824 tf_logging.py:115] global_step 180: box_loss 37.2856 , class_loss 6.7314 (1.29 sec/step)
+I1109 18:29:41.594182 140651552429824 tf_logging.py:115] global_step 200: box_loss 32.4809 , class_loss 7.2893 (1.30 sec/step)
+I1109 18:29:58.107580 140651552429824 tf_logging.py:115] global_step 220: box_loss 28.2432 , class_loss 7.3770 (1.26 sec/step)
+I1109 18:30:15.135165 140651552429824 tf_logging.py:115] global_step 240: box_loss 24.5380 , class_loss 7.1194 (1.81 sec/step)
+I1109 18:30:32.081221 140651552429824 tf_logging.py:115] global_step 260: box_loss 21.3179 , class_loss 6.6629 (1.52 sec/step)
+I1109 18:30:48.444176 140651552429824 tf_logging.py:115] global_step 280: box_loss 18.4661 , class_loss 6.3120 (1.30 sec/step)
+I1109 18:31:05.308947 140651552429824 tf_logging.py:115] global_step 300: box_loss 16.0518 , class_loss 6.3534 (1.53 sec/step)
+I1109 18:31:21.539835 140651552429824 tf_logging.py:115] global_step 320: box_loss 13.9546 , class_loss 6.8544 (1.29 sec/step)
+I1109 18:31:38.639847 140651552429824 tf_logging.py:115] global_step 340: box_loss 12.1658 , class_loss 6.9058 (1.42 sec/step)
+I1109 18:31:56.020745 140651552429824 tf_logging.py:115] global_step 360: box_loss 10.5992 , class_loss 6.2957 (1.54 sec/step)
+I1109 18:32:13.317270 140651552429824 tf_logging.py:115] global_step 380: box_loss 9.2990 , class_loss 6.3621 (2.63 sec/step)
+I1109 18:32:29.584777 140651552429824 tf_logging.py:115] global_step 400: box_loss 8.2060 , class_loss 8.0551 (1.33 sec/step)
+I1109 18:32:45.774524 140651552429824 tf_logging.py:115] global_step 420: box_loss 7.2541 , class_loss 6.8226 (1.36 sec/step)
+I1109 18:33:02.964652 140651552429824 tf_logging.py:115] global_step 440: box_loss 6.4715 , class_loss 6.9500 (1.32 sec/step)
+I1109 18:33:19.119012 140651552429824 tf_logging.py:115] global_step 460: box_loss 5.8276 , class_loss 7.3611 (1.39 sec/step)
+I1109 18:33:36.112786 140651552429824 tf_logging.py:115] global_step 480: box_loss 5.2583 , class_loss 7.0244 (1.29 sec/step)
+I1109 18:33:52.601679 140651552429824 tf_logging.py:115] global_step 500: box_loss 4.7755 , class_loss 7.2839 (1.71 sec/step)
+I1109 18:34:09.624495 140651552429824 tf_logging.py:115] global_step 520: box_loss 4.3876 , class_loss 6.0141 (1.80 sec/step)
+I1109 18:34:26.145241 140651552429824 tf_logging.py:115] global_step 540: box_loss 4.0704 , class_loss 6.6666 (1.31 sec/step)
+I1109 18:34:42.956011 140651552429824 tf_logging.py:115] global_step 560: box_loss 3.8060 , class_loss 6.8503 (1.33 sec/step)
+I1109 18:34:59.636909 140651552429824 tf_logging.py:115] global_step 580: box_loss 3.5912 , class_loss 7.2122 (1.44 sec/step)
+I1109 18:35:17.153902 140651552429824 tf_logging.py:115] global_step 600: box_loss 3.4046 , class_loss 6.4866 (1.39 sec/step)
+I1109 18:35:33.912641 140651552429824 tf_logging.py:115] global_step 620: box_loss 3.2606 , class_loss 6.3180 (1.82 sec/step)
+I1109 18:35:51.805227 140651552429824 tf_logging.py:115] global_step 640: box_loss 3.1255 , class_loss 6.3977 (1.29 sec/step)
+I1109 18:36:07.918982 140651552429824 tf_logging.py:115] global_step 660: box_loss 3.0238 , class_loss 6.5315 (1.31 sec/step)
+I1109 18:36:24.478303 140651552429824 tf_logging.py:115] global_step 680: box_loss 2.9676 , class_loss 6.9268 (1.34 sec/step)
+I1109 18:36:41.041212 140651552429824 tf_logging.py:115] global_step 700: box_loss 2.8807 , class_loss 6.5588 (1.33 sec/step)
+I1109 18:36:58.077495 140651552429824 tf_logging.py:115] global_step 720: box_loss 2.8428 , class_loss 6.7026 (1.80 sec/step)
+I1109 18:37:14.665569 140651552429824 tf_logging.py:115] global_step 740: box_loss 2.7901 , class_loss 6.6521 (1.66 sec/step)
+I1109 18:37:31.345910 140651552429824 tf_logging.py:115] global_step 760: box_loss 2.7553 , class_loss 5.8899 (1.30 sec/step)
+I1109 18:37:48.209648 140651552429824 tf_logging.py:115] global_step 780: box_loss 2.7384 , class_loss 7.4886 (1.34 sec/step)
+I1109 18:38:04.802284 140651552429824 tf_logging.py:115] global_step 800: box_loss 2.6848 , class_loss 6.0307 (1.50 sec/step)
+I1109 18:38:21.958896 140651552429824 tf_logging.py:115] global_step 820: box_loss 2.6725 , class_loss 6.2242 (1.30 sec/step)
+I1109 18:38:38.808778 140651552429824 tf_logging.py:115] global_step 840: box_loss 2.6555 , class_loss 6.2752 (1.63 sec/step)
+I1109 18:38:55.649493 140651552429824 tf_logging.py:115] global_step 860: box_loss 2.6368 , class_loss 6.4145 (1.55 sec/step)
+I1109 18:39:11.587621 140651552429824 tf_logging.py:115] global_step 880: box_loss 2.5998 , class_loss 6.9379 (1.31 sec/step)
+I1109 18:39:28.198336 140651552429824 tf_logging.py:115] global_step 900: box_loss 2.5983 , class_loss 5.8886 (1.55 sec/step)
+I1109 18:39:44.706826 140651552429824 tf_logging.py:115] global_step 920: box_loss 2.5854 , class_loss 6.7995 (1.50 sec/step)
+I1109 18:40:01.515456 140651552429824 tf_logging.py:115] global_step 940: box_loss 2.6017 , class_loss 6.6897 (1.37 sec/step)
+I1109 18:40:18.147403 140651552429824 tf_logging.py:115] global_step 960: box_loss 2.5796 , class_loss 6.3626 (1.28 sec/step)
+I1109 18:40:33.906301 140651552429824 tf_logging.py:115] global_step 980: box_loss 2.5655 , class_loss 6.0879 (1.28 sec/step)
+I1109 18:40:51.989032 140651552429824 tf_logging.py:115] global_step 1000: box_loss 2.5650 , class_loss 6.3737 (1.53 sec/step)
+I1109 18:41:08.935978 140651552429824 tf_logging.py:115] global_step 1020: box_loss 2.5633 , class_loss 6.5459 (1.31 sec/step)
+I1109 18:41:25.748337 140651552429824 tf_logging.py:115] global_step 1040: box_loss 2.5568 , class_loss 6.1360 (1.25 sec/step)
+I1109 18:41:41.528426 140651552429824 tf_logging.py:115] global_step 1060: box_loss 2.5469 , class_loss 6.3252 (1.31 sec/step)
+I1109 18:41:57.953449 140651552429824 tf_logging.py:115] global_step 1080: box_loss 2.5507 , class_loss 6.1563 (1.28 sec/step)
+I1109 18:42:14.425995 140651552429824 tf_logging.py:115] global_step 1100: box_loss 2.5276 , class_loss 6.4099 (1.35 sec/step)
+I1109 18:42:30.843123 140651552429824 tf_logging.py:115] global_step 1120: box_loss 2.5285 , class_loss 6.4537 (1.50 sec/step)
+I1109 18:42:47.865632 140651552429824 tf_logging.py:115] global_step 1140: box_loss 2.5483 , class_loss 7.3693 (1.70 sec/step)
+I1109 18:43:04.830267 140651552429824 tf_logging.py:115] global_step 1160: box_loss 2.5277 , class_loss 6.2973 (1.29 sec/step)
+I1109 18:43:22.315357 140651552429824 tf_logging.py:115] global_step 1180: box_loss 2.5054 , class_loss 6.5183 (1.33 sec/step)
+I1109 18:43:37.989617 140651552429824 tf_logging.py:115] global_step 1200: box_loss 2.4797 , class_loss 6.4265 (1.35 sec/step)
+I1109 18:43:54.535546 140651552429824 tf_logging.py:115] global_step 1220: box_loss 2.4924 , class_loss 6.9237 (1.40 sec/step)
+I1109 18:44:11.315268 140651552429824 tf_logging.py:115] global_step 1240: box_loss 2.4849 , class_loss 5.9709 (1.65 sec/step)
+I1109 18:44:28.011805 140651552429824 tf_logging.py:115] global_step 1260: box_loss 2.4812 , class_loss 6.7775 (1.45 sec/step)
+I1109 18:44:44.534483 140651552429824 tf_logging.py:115] global_step 1280: box_loss 2.4750 , class_loss 6.8578 (1.31 sec/step)
+I1109 18:45:01.623903 140651552429824 tf_logging.py:115] global_step 1300: box_loss 2.4842 , class_loss 6.2983 (1.60 sec/step)
+I1109 18:45:17.968934 140651552429824 tf_logging.py:115] global_step 1320: box_loss 2.4525 , class_loss 6.0287 (1.34 sec/step)
+I1109 18:45:34.501193 140651552429824 tf_logging.py:115] global_step 1340: box_loss 2.4675 , class_loss 6.7623 (1.32 sec/step)
+I1109 18:45:52.883886 140651552429824 tf_logging.py:115] global_step 1360: box_loss 2.4597 , class_loss 6.2327 (1.49 sec/step)
+I1109 18:46:09.474231 140651552429824 tf_logging.py:115] global_step 1380: box_loss 2.4584 , class_loss 6.0880 (1.47 sec/step)
+I1109 18:46:26.435573 140651552429824 tf_logging.py:115] global_step 1400: box_loss 2.4314 , class_loss 6.4930 (1.27 sec/step)
+I1109 18:46:42.655573 140651552429824 tf_logging.py:115] global_step 1420: box_loss 2.4478 , class_loss 6.5387 (1.38 sec/step)
+I1109 18:46:59.590268 140651552429824 tf_logging.py:115] global_step 1440: box_loss 2.4267 , class_loss 6.4830 (1.33 sec/step)
+I1109 18:47:16.219539 140651552429824 tf_logging.py:115] global_step 1460: box_loss 2.4445 , class_loss 6.7865 (1.45 sec/step)
+I1109 18:47:33.908547 140651552429824 tf_logging.py:115] global_step 1480: box_loss 2.4165 , class_loss 6.5425 (1.40 sec/step)
+I1109 18:47:50.326977 140651552429824 tf_logging.py:115] global_step 1500: box_loss 2.4080 , class_loss 5.6550 (1.27 sec/step)
+I1109 18:48:07.256975 140651552429824 tf_logging.py:115] global_step 1520: box_loss 2.4223 , class_loss 6.8517 (1.27 sec/step)
+I1109 18:48:24.111433 140651552429824 tf_logging.py:115] global_step 1540: box_loss 2.4040 , class_loss 6.3407 (1.36 sec/step)
+I1109 18:48:41.153874 140651552429824 tf_logging.py:115] global_step 1560: box_loss 2.4142 , class_loss 6.0189 (1.79 sec/step)
+I1109 18:48:57.721363 140651552429824 tf_logging.py:115] global_step 1580: box_loss 2.3891 , class_loss 6.3706 (1.60 sec/step)
+I1109 18:49:13.836803 140651552429824 tf_logging.py:115] global_step 1600: box_loss 2.4196 , class_loss 7.0471 (1.63 sec/step)
+I1109 18:49:31.073941 140651552429824 tf_logging.py:115] global_step 1620: box_loss 2.3718 , class_loss 6.1409 (1.80 sec/step)
+I1109 18:49:48.097667 140651552429824 tf_logging.py:115] global_step 1640: box_loss 2.3753 , class_loss 5.6449 (1.60 sec/step)
+I1109 18:50:04.707103 140651552429824 tf_logging.py:115] global_step 1660: box_loss 2.3793 , class_loss 6.0472 (1.52 sec/step)
+I1109 18:50:21.202658 140651552429824 tf_logging.py:115] global_step 1680: box_loss 2.3536 , class_loss 6.2165 (1.33 sec/step)
+I1109 18:50:38.895257 140651552429824 tf_logging.py:115] global_step 1700: box_loss 2.3657 , class_loss 6.7097 (1.27 sec/step)
+I1109 18:50:55.480570 140651552429824 tf_logging.py:115] global_step 1720: box_loss 2.3435 , class_loss 6.5086 (1.81 sec/step)
+I1109 18:51:13.171091 140651552429824 tf_logging.py:115] global_step 1740: box_loss 2.3402 , class_loss 6.8590 (1.35 sec/step)
+I1109 18:51:29.965809 140651552429824 tf_logging.py:115] global_step 1760: box_loss 2.3223 , class_loss 6.3036 (1.34 sec/step)
+I1109 18:51:47.709897 140651552429824 tf_logging.py:115] global_step 1780: box_loss 2.3453 , class_loss 6.1260 (2.15 sec/step)
+I1109 18:52:04.275350 140651552429824 tf_logging.py:115] global_step 1800: box_loss 2.3210 , class_loss 5.7402 (1.53 sec/step)
+I1109 18:52:21.225111 140651552429824 tf_logging.py:115] global_step 1820: box_loss 2.3165 , class_loss 5.8030 (1.32 sec/step)
+I1109 18:52:39.309080 140651552429824 tf_logging.py:115] global_step 1840: box_loss 2.3146 , class_loss 5.7207 (1.38 sec/step)
+I1109 18:52:56.621209 140651552429824 tf_logging.py:115] global_step 1860: box_loss 2.3025 , class_loss 6.1620 (1.57 sec/step)
+I1109 18:53:13.415693 140651552429824 tf_logging.py:115] global_step 1880: box_loss 2.2943 , class_loss 6.5395 (1.37 sec/step)
+I1109 18:53:30.196368 140651552429824 tf_logging.py:115] global_step 1900: box_loss 2.2884 , class_loss 5.8804 (1.36 sec/step)
+I1109 18:53:47.898801 140651552429824 tf_logging.py:115] global_step 1920: box_loss 2.2829 , class_loss 6.2391 (1.35 sec/step)
+I1109 18:54:05.371491 140651552429824 tf_logging.py:115] global_step 1940: box_loss 2.2862 , class_loss 6.5225 (1.72 sec/step)
+I1109 18:54:22.759644 140651552429824 tf_logging.py:115] global_step 1960: box_loss 2.2877 , class_loss 6.1620 (1.40 sec/step)
+I1109 18:54:39.107784 140651552429824 tf_logging.py:115] global_step 1980: box_loss 2.2752 , class_loss 6.3056 (1.34 sec/step)
+I1109 18:54:56.769331 140651552429824 tf_logging.py:115] global_step 2000: box_loss 2.2644 , class_loss 5.9357 (1.45 sec/step)
+I1109 18:55:12.643078 140651552429824 tf_logging.py:115] global_step 2020: box_loss 2.2679 , class_loss 6.6562 (1.30 sec/step)
+I1109 18:55:30.349971 140651552429824 tf_logging.py:115] global_step 2040: box_loss 2.2703 , class_loss 5.9901 (1.34 sec/step)
+I1109 18:55:47.001007 140651552429824 tf_logging.py:115] global_step 2060: box_loss 2.2487 , class_loss 6.4649 (1.57 sec/step)
+I1109 18:56:03.971028 140651552429824 tf_logging.py:115] global_step 2080: box_loss 2.2424 , class_loss 6.7292 (1.59 sec/step)
+I1109 18:56:20.499099 140651552429824 tf_logging.py:115] global_step 2100: box_loss 2.2426 , class_loss 6.3031 (1.26 sec/step)
+I1109 18:56:37.602041 140651552429824 tf_logging.py:115] global_step 2120: box_loss 2.2240 , class_loss 6.5524 (1.42 sec/step)
+I1109 18:56:54.397140 140651552429824 tf_logging.py:115] global_step 2140: box_loss 2.2175 , class_loss 5.8943 (1.33 sec/step)
+I1109 18:57:11.462291 140651552429824 tf_logging.py:115] global_step 2160: box_loss 2.2072 , class_loss 6.8151 (1.62 sec/step)
+I1109 18:57:29.076300 140651552429824 tf_logging.py:115] global_step 2180: box_loss 2.2159 , class_loss 5.8566 (1.30 sec/step)
+I1109 18:57:45.271166 140651552429824 tf_logging.py:115] global_step 2200: box_loss 2.2009 , class_loss 6.1105 (1.35 sec/step)
+I1109 18:58:02.424638 140651552429824 tf_logging.py:115] global_step 2220: box_loss 2.2030 , class_loss 6.1091 (1.29 sec/step)
+I1109 18:58:18.950418 140651552429824 tf_logging.py:115] global_step 2240: box_loss 2.2010 , class_loss 6.1710 (1.38 sec/step)
+I1109 18:58:37.455475 140651552429824 tf_logging.py:115] global_step 2260: box_loss 2.1733 , class_loss 5.7555 (1.98 sec/step)
+I1109 18:58:54.411439 140651552429824 tf_logging.py:115] global_step 2280: box_loss 2.1772 , class_loss 5.8872 (1.38 sec/step)
+I1109 18:59:11.310020 140651552429824 tf_logging.py:115] global_step 2300: box_loss 2.1687 , class_loss 5.6174 (1.32 sec/step)
+I1109 18:59:27.916980 140651552429824 tf_logging.py:115] global_step 2320: box_loss 2.1597 , class_loss 6.7933 (1.39 sec/step)
+I1109 18:59:46.600397 140651552429824 tf_logging.py:115] global_step 2340: box_loss 2.1676 , class_loss 6.0551 (1.54 sec/step)
+I1109 19:00:04.086503 140651552429824 tf_logging.py:115] global_step 2360: box_loss 2.1663 , class_loss 6.1633 (1.34 sec/step)
+I1109 19:00:20.940502 140651552429824 tf_logging.py:115] global_step 2380: box_loss 2.1365 , class_loss 6.5345 (1.32 sec/step)
+I1109 19:00:37.803578 140651552429824 tf_logging.py:115] global_step 2400: box_loss 2.1331 , class_loss 6.5760 (1.36 sec/step)
+I1109 19:00:54.832863 140651552429824 tf_logging.py:115] global_step 2420: box_loss 2.1469 , class_loss 5.9879 (1.37 sec/step)
+I1109 19:01:11.271447 140651552429824 tf_logging.py:115] global_step 2440: box_loss 2.1257 , class_loss 6.2445 (1.41 sec/step)
+I1109 19:01:28.174649 140651552429824 tf_logging.py:115] global_step 2460: box_loss 2.1342 , class_loss 6.3717 (1.52 sec/step)
+I1109 19:01:44.904663 140651552429824 tf_logging.py:115] global_step 2480: box_loss 2.1457 , class_loss 5.8965 (1.33 sec/step)
+I1109 19:02:01.711204 140651552429824 tf_logging.py:115] global_step 2500: box_loss 2.1098 , class_loss 6.3008 (1.30 sec/step)
+I1109 19:02:18.443020 140651552429824 tf_logging.py:115] global_step 2520: box_loss 2.1129 , class_loss 5.8647 (1.29 sec/step)
+I1109 19:02:35.695128 140651552429824 tf_logging.py:115] global_step 2540: box_loss 2.1117 , class_loss 6.5291 (1.67 sec/step)
+I1109 19:02:54.503105 140651552429824 tf_logging.py:115] global_step 2560: box_loss 2.0837 , class_loss 6.1203 (1.32 sec/step)
+I1109 19:03:11.530755 140651552429824 tf_logging.py:115] global_step 2580: box_loss 2.0842 , class_loss 5.9523 (1.33 sec/step)
+I1109 19:03:30.074868 140651552429824 tf_logging.py:115] global_step 2600: box_loss 2.0756 , class_loss 7.0779 (1.48 sec/step)
+I1109 19:03:47.722554 140651552429824 tf_logging.py:115] global_step 2620: box_loss 2.0743 , class_loss 6.4826 (1.55 sec/step)
+I1109 19:04:04.466314 140651552429824 tf_logging.py:115] global_step 2640: box_loss 2.0891 , class_loss 6.2051 (1.34 sec/step)
+I1109 19:04:20.571044 140651552429824 tf_logging.py:115] global_step 2660: box_loss 2.0529 , class_loss 5.5313 (1.35 sec/step)
+I1109 19:04:37.454995 140651552429824 tf_logging.py:115] global_step 2680: box_loss 2.0795 , class_loss 5.4415 (1.35 sec/step)
+I1109 19:04:54.682211 140651552429824 tf_logging.py:115] global_step 2700: box_loss 37.8969 , class_loss 5.8009 (1.63 sec/step)
+I1109 19:05:12.021729 140651552429824 tf_logging.py:115] global_step 2720: box_loss 519.3718 , class_loss 5.6407 (1.64 sec/step)
+I1109 19:05:28.636945 140651552429824 tf_logging.py:115] global_step 2740: box_loss 23.8988 , class_loss 6.8492 (1.37 sec/step)
+I1109 19:05:45.902235 140651552429824 tf_logging.py:115] global_step 2760: box_loss 3.5676 , class_loss 5.7479 (1.34 sec/step)
+I1109 19:06:03.008937 140651552429824 tf_logging.py:115] global_step 2780: box_loss 3.3673 , class_loss 6.2629 (1.56 sec/step)
+I1109 19:06:20.673344 140651552429824 tf_logging.py:115] global_step 2800: box_loss 3.2656 , class_loss 5.8470 (1.63 sec/step)
+I1109 19:06:37.281115 140651552429824 tf_logging.py:115] global_step 2820: box_loss 2.5229 , class_loss 6.5905 (1.31 sec/step)
+I1109 19:06:54.470776 140651552429824 tf_logging.py:115] global_step 2840: box_loss 2.5734 , class_loss 6.1324 (1.32 sec/step)
+I1109 19:07:11.133874 140651552429824 tf_logging.py:115] global_step 2860: box_loss 2.5766 , class_loss 5.8870 (1.31 sec/step)
+I1109 19:07:28.315466 140651552429824 tf_logging.py:115] global_step 2880: box_loss 2.4772 , class_loss 6.0569 (1.32 sec/step)
+I1109 19:07:45.279181 140651552429824 tf_logging.py:115] global_step 2900: box_loss 2.4373 , class_loss 5.7056 (1.76 sec/step)
+I1109 19:08:02.434942 140651552429824 tf_logging.py:115] global_step 2920: box_loss 2.5825 , class_loss 6.4880 (1.30 sec/step)
+I1109 19:08:18.923921 140651552429824 tf_logging.py:115] global_step 2940: box_loss 2.4730 , class_loss 5.7249 (1.31 sec/step)
+I1109 19:08:36.499768 140651552429824 tf_logging.py:115] global_step 2960: box_loss 2.4332 , class_loss 5.7579 (1.64 sec/step)
+I1109 19:08:52.717176 140651552429824 tf_logging.py:115] global_step 2980: box_loss 2.4616 , class_loss 5.8801 (1.39 sec/step)
+I1109 19:09:09.902914 140651552429824 tf_logging.py:115] global_step 3000: box_loss 2.4183 , class_loss 5.8764 (1.86 sec/step)
+I1109 19:09:26.617845 140651552429824 tf_logging.py:115] global_step 3020: box_loss 2.3805 , class_loss 5.1836 (1.75 sec/step)
+I1109 19:09:43.175165 140651552429824 tf_logging.py:115] global_step 3040: box_loss 2.3891 , class_loss 5.3570 (1.36 sec/step)
+I1109 19:10:00.016954 140651552429824 tf_logging.py:115] global_step 3060: box_loss 2.4832 , class_loss 6.5830 (1.35 sec/step)
+I1109 19:10:16.724941 140651552429824 tf_logging.py:115] global_step 3080: box_loss 2.4296 , class_loss 6.4867 (1.33 sec/step)
+I1109 19:10:33.776355 140651552429824 tf_logging.py:115] global_step 3100: box_loss 2.4072 , class_loss 5.5239 (1.55 sec/step)
+I1109 19:10:50.513789 140651552429824 tf_logging.py:115] global_step 3120: box_loss 2.3555 , class_loss 5.9534 (1.76 sec/step)
+I1109 19:11:07.179267 140651552429824 tf_logging.py:115] global_step 3140: box_loss 2.4278 , class_loss 5.7296 (1.72 sec/step)
+I1109 19:11:23.909641 140651552429824 tf_logging.py:115] global_step 3160: box_loss 2.3415 , class_loss 5.7797 (1.34 sec/step)
+I1109 19:11:40.921327 140651552429824 tf_logging.py:115] global_step 3180: box_loss 2.4090 , class_loss 5.8834 (1.31 sec/step)
+I1109 19:11:57.353207 140651552429824 tf_logging.py:115] global_step 3200: box_loss 2.3294 , class_loss 5.4585 (1.30 sec/step)
+I1109 19:12:14.529301 140651552429824 tf_logging.py:115] global_step 3220: box_loss 2.3556 , class_loss 6.2076 (1.36 sec/step)
+I1109 19:12:31.234808 140651552429824 tf_logging.py:115] global_step 3240: box_loss 2.3545 , class_loss 5.8407 (1.53 sec/step)
+I1109 19:12:48.697040 140651552429824 tf_logging.py:115] global_step 3260: box_loss 2.3544 , class_loss 6.2779 (1.56 sec/step)
+I1109 19:13:05.009218 140651552429824 tf_logging.py:115] global_step 3280: box_loss 2.3528 , class_loss 5.8319 (1.33 sec/step)
+I1109 19:13:21.647333 140651552429824 tf_logging.py:115] global_step 3300: box_loss 2.3408 , class_loss 6.1249 (1.30 sec/step)
+I1109 19:13:38.481643 140651552429824 tf_logging.py:115] global_step 3320: box_loss 2.3266 , class_loss 5.8516 (1.42 sec/step)
+I1109 19:13:56.581802 140651552429824 tf_logging.py:115] global_step 3340: box_loss 2.3008 , class_loss 6.5147 (2.09 sec/step)
+I1109 19:14:13.565793 140651552429824 tf_logging.py:115] global_step 3360: box_loss 2.3526 , class_loss 5.6806 (1.34 sec/step)
+I1109 19:14:31.015723 140651552429824 tf_logging.py:115] global_step 3380: box_loss 2.2983 , class_loss 5.0652 (1.68 sec/step)
+I1109 19:14:48.717471 140651552429824 tf_logging.py:115] global_step 3400: box_loss 2.3424 , class_loss 5.5903 (1.52 sec/step)
+I1109 19:15:06.056676 140651552429824 tf_logging.py:115] global_step 3420: box_loss 2.2942 , class_loss 5.0783 (1.49 sec/step)
+I1109 19:15:23.621417 140651552429824 tf_logging.py:115] global_step 3440: box_loss 2.2948 , class_loss 5.2138 (1.36 sec/step)
+I1109 19:15:39.765800 140651552429824 tf_logging.py:115] global_step 3460: box_loss 2.2804 , class_loss 5.9028 (1.27 sec/step)
+I1109 19:15:56.942008 140651552429824 tf_logging.py:115] global_step 3480: box_loss 2.3008 , class_loss 5.7213 (1.36 sec/step)
+I1109 19:16:13.881013 140651552429824 tf_logging.py:115] global_step 3500: box_loss 2.3220 , class_loss 5.7166 (1.69 sec/step)
+I1109 19:16:30.680906 140651552429824 tf_logging.py:115] global_step 3520: box_loss 2.2862 , class_loss 6.3023 (1.53 sec/step)
+I1109 19:16:47.300420 140651552429824 tf_logging.py:115] global_step 3540: box_loss 2.3118 , class_loss 6.0401 (1.29 sec/step)
+I1109 19:17:04.933775 140651552429824 tf_logging.py:115] global_step 3560: box_loss 2.2990 , class_loss 5.8521 (1.27 sec/step)
+I1109 19:17:20.842733 140651552429824 tf_logging.py:115] global_step 3580: box_loss 2.2698 , class_loss 5.3796 (1.32 sec/step)
+I1109 19:17:38.794682 140651552429824 tf_logging.py:115] global_step 3600: box_loss 2.2580 , class_loss 5.8683 (1.58 sec/step)
+I1109 19:17:55.307394 140651552429824 tf_logging.py:115] global_step 3620: box_loss 2.2537 , class_loss 5.7881 (1.49 sec/step)
+I1109 19:18:13.303534 140651552429824 tf_logging.py:115] global_step 3640: box_loss 2.2616 , class_loss 6.0524 (1.35 sec/step)
+I1109 19:18:30.314939 140651552429824 tf_logging.py:115] global_step 3660: box_loss 2.2442 , class_loss 5.5884 (1.46 sec/step)
+I1109 19:18:47.484639 140651552429824 tf_logging.py:115] global_step 3680: box_loss 2.2614 , class_loss 6.0301 (2.23 sec/step)
+I1109 19:19:03.990110 140651552429824 tf_logging.py:115] global_step 3700: box_loss 2.2537 , class_loss 5.8914 (1.71 sec/step)
+I1109 19:19:20.839232 140651552429824 tf_logging.py:115] global_step 3720: box_loss 2.2470 , class_loss 6.1027 (1.38 sec/step)
+I1109 19:19:37.453328 140651552429824 tf_logging.py:115] global_step 3740: box_loss 2.2512 , class_loss 5.0956 (1.33 sec/step)
+I1109 19:19:54.588233 140651552429824 tf_logging.py:115] global_step 3760: box_loss 2.2527 , class_loss 5.6631 (1.40 sec/step)
+I1109 19:20:11.926163 140651552429824 tf_logging.py:115] global_step 3780: box_loss 2.2593 , class_loss 6.1032 (1.56 sec/step)
+I1109 19:20:28.761694 140651552429824 tf_logging.py:115] global_step 3800: box_loss 2.2533 , class_loss 4.8120 (1.28 sec/step)
+I1109 19:20:46.019577 140651552429824 tf_logging.py:115] global_step 3820: box_loss 2.2548 , class_loss 5.5063 (1.28 sec/step)
+I1109 19:21:02.307866 140651552429824 tf_logging.py:115] global_step 3840: box_loss 2.2308 , class_loss 5.4876 (1.29 sec/step)
+I1109 19:21:19.321718 140651552429824 tf_logging.py:115] global_step 3860: box_loss 2.2251 , class_loss 5.9325 (1.37 sec/step)
+I1109 19:21:36.029365 140651552429824 tf_logging.py:115] global_step 3880: box_loss 2.2414 , class_loss 6.0980 (1.32 sec/step)
+I1109 19:21:54.357277 140651552429824 tf_logging.py:115] global_step 3900: box_loss 2.2333 , class_loss 6.1992 (1.74 sec/step)
+I1109 19:22:11.490110 140651552429824 tf_logging.py:115] global_step 3920: box_loss 2.2311 , class_loss 5.3411 (1.35 sec/step)
+I1109 19:22:29.240431 140651552429824 tf_logging.py:115] global_step 3940: box_loss 2.2238 , class_loss 5.5585 (1.34 sec/step)
+I1109 19:22:45.668846 140651552429824 tf_logging.py:115] global_step 3960: box_loss 2.2250 , class_loss 5.6292 (1.35 sec/step)
+I1109 19:23:03.485175 140651552429824 tf_logging.py:115] global_step 3980: box_loss 2.2153 , class_loss 6.1142 (2.37 sec/step)
+I1109 19:23:21.122184 140651552429824 tf_logging.py:115] global_step 4000: box_loss 2.2203 , class_loss 5.7012 (1.31 sec/step)
+I1109 19:23:38.164485 140651552429824 tf_logging.py:115] global_step 4020: box_loss 2.2211 , class_loss 7.3648 (1.43 sec/step)
+I1109 19:23:54.926936 140651552429824 tf_logging.py:115] global_step 4040: box_loss 2.2297 , class_loss 5.4444 (1.33 sec/step)
+I1109 19:24:13.042204 140651552429824 tf_logging.py:115] global_step 4060: box_loss 2.2277 , class_loss 5.6452 (2.36 sec/step)
+I1109 19:24:29.941176 140651552429824 tf_logging.py:115] global_step 4080: box_loss 2.2143 , class_loss 5.3700 (1.30 sec/step)
+I1109 19:24:47.291420 140651552429824 tf_logging.py:115] global_step 4100: box_loss 2.2076 , class_loss 5.6591 (1.33 sec/step)
+I1109 19:25:04.359207 140651552429824 tf_logging.py:115] global_step 4120: box_loss 2.2009 , class_loss 6.1639 (1.33 sec/step)
+I1109 19:25:21.462680 140651552429824 tf_logging.py:115] global_step 4140: box_loss 2.1965 , class_loss 5.9623 (1.37 sec/step)
+I1109 19:25:38.642831 140651552429824 tf_logging.py:115] global_step 4160: box_loss 2.1922 , class_loss 6.0935 (1.55 sec/step)
+I1109 19:25:55.136422 140651552429824 tf_logging.py:115] global_step 4180: box_loss 2.1851 , class_loss 5.9583 (1.31 sec/step)
+I1109 19:26:12.072554 140651552429824 tf_logging.py:115] global_step 4200: box_loss 2.2166 , class_loss 5.9747 (1.48 sec/step)
+I1109 19:26:28.702165 140651552429824 tf_logging.py:115] global_step 4220: box_loss 2.1974 , class_loss 6.1914 (1.34 sec/step)
+I1109 19:26:46.437928 140651552429824 tf_logging.py:115] global_step 4240: box_loss 2.1972 , class_loss 5.8841 (1.30 sec/step)
+I1109 19:27:03.398347 140651552429824 tf_logging.py:115] global_step 4260: box_loss 2.2072 , class_loss 5.4107 (1.90 sec/step)
+I1109 19:27:20.583426 140651552429824 tf_logging.py:115] global_step 4280: box_loss 2.1814 , class_loss 5.8166 (1.36 sec/step)
+I1109 19:27:36.990578 140651552429824 tf_logging.py:115] global_step 4300: box_loss 2.1810 , class_loss 5.5652 (1.34 sec/step)
+I1109 19:27:55.191991 140651552429824 tf_logging.py:115] global_step 4320: box_loss 2.1810 , class_loss 5.6401 (1.38 sec/step)
+I1109 19:28:12.584353 140651552429824 tf_logging.py:115] global_step 4340: box_loss 2.1806 , class_loss 5.7729 (1.51 sec/step)
+I1109 19:28:30.101345 140651552429824 tf_logging.py:115] global_step 4360: box_loss 2.1675 , class_loss 5.6658 (1.99 sec/step)
+I1109 19:28:46.191872 140651552429824 tf_logging.py:115] global_step 4380: box_loss 2.1930 , class_loss 5.0950 (1.34 sec/step)
+I1109 19:29:02.866709 140651552429824 tf_logging.py:115] global_step 4400: box_loss 2.1725 , class_loss 5.6444 (1.33 sec/step)
+I1109 19:29:19.693794 140651552429824 tf_logging.py:115] global_step 4420: box_loss 2.1923 , class_loss 5.4801 (1.31 sec/step)
+I1109 19:29:37.495433 140651552429824 tf_logging.py:115] global_step 4440: box_loss 2.1732 , class_loss 6.0081 (2.46 sec/step)
+I1109 19:29:54.236687 140651552429824 tf_logging.py:115] global_step 4460: box_loss 2.1642 , class_loss 5.3762 (1.30 sec/step)
+I1109 19:30:10.347872 140651552429824 tf_logging.py:115] global_step 4480: box_loss 2.1617 , class_loss 5.2357 (1.30 sec/step)
+I1109 19:30:28.256599 140651552429824 tf_logging.py:115] global_step 4500: box_loss 2.1724 , class_loss 5.9509 (1.31 sec/step)
+I1109 19:30:45.704180 140651552429824 tf_logging.py:115] global_step 4520: box_loss 2.1457 , class_loss 6.0370 (1.54 sec/step)
+I1109 19:31:03.793108 140651552429824 tf_logging.py:115] global_step 4540: box_loss 2.1717 , class_loss 5.7470 (1.54 sec/step)
+I1109 19:31:20.118686 140651552429824 tf_logging.py:115] global_step 4560: box_loss 2.1640 , class_loss 5.6072 (1.28 sec/step)
+I1109 19:31:37.839276 140651552429824 tf_logging.py:115] global_step 4580: box_loss 2.1645 , class_loss 5.5151 (1.37 sec/step)
+I1109 19:31:55.025002 140651552429824 tf_logging.py:115] global_step 4600: box_loss 2.1454 , class_loss 5.8454 (1.71 sec/step)
+I1109 19:32:12.134020 140651552429824 tf_logging.py:115] global_step 4620: box_loss 2.1540 , class_loss 5.8325 (1.46 sec/step)
+I1109 19:32:28.912660 140651552429824 tf_logging.py:115] global_step 4640: box_loss 2.1676 , class_loss 5.9991 (1.30 sec/step)
+I1109 19:32:45.846789 140651552429824 tf_logging.py:115] global_step 4660: box_loss 2.1360 , class_loss 5.1601 (1.47 sec/step)
+I1109 19:33:02.658920 140651552429824 tf_logging.py:115] global_step 4680: box_loss 2.1478 , class_loss 5.7173 (1.49 sec/step)
+I1109 19:33:20.016318 140651552429824 tf_logging.py:115] global_step 4700: box_loss 2.1545 , class_loss 6.0120 (1.34 sec/step)
+I1109 19:33:36.523443 140651552429824 tf_logging.py:115] global_step 4720: box_loss 2.1450 , class_loss 5.4128 (1.67 sec/step)
+I1109 19:33:53.935380 140651552429824 tf_logging.py:115] global_step 4740: box_loss 2.1415 , class_loss 5.8519 (1.31 sec/step)
+I1109 19:34:10.507700 140651552429824 tf_logging.py:115] global_step 4760: box_loss 2.1376 , class_loss 5.6023 (1.31 sec/step)
+I1109 19:34:27.834721 140651552429824 tf_logging.py:115] global_step 4780: box_loss 2.1380 , class_loss 5.8090 (1.32 sec/step)
+I1109 19:34:43.924259 140651552429824 tf_logging.py:115] global_step 4800: box_loss 2.1522 , class_loss 4.9213 (1.37 sec/step)
+I1109 19:35:00.937386 140651552429824 tf_logging.py:115] global_step 4820: box_loss 2.1371 , class_loss 6.2267 (1.63 sec/step)
+I1109 19:35:18.465490 140651552429824 tf_logging.py:115] global_step 4840: box_loss 2.1399 , class_loss 5.4624 (1.36 sec/step)
+I1109 19:35:35.135051 140651552429824 tf_logging.py:115] global_step 4860: box_loss 2.1414 , class_loss 5.8945 (1.38 sec/step)
+I1109 19:35:52.353013 140651552429824 tf_logging.py:115] global_step 4880: box_loss 2.1473 , class_loss 4.8846 (1.35 sec/step)
+I1109 19:36:08.629726 140651552429824 tf_logging.py:115] global_step 4900: box_loss 2.1477 , class_loss 6.3446 (1.32 sec/step)
+I1109 19:36:26.125017 140651552429824 tf_logging.py:115] global_step 4920: box_loss 2.1269 , class_loss 5.4046 (1.33 sec/step)
+I1109 19:36:43.031314 140651552429824 tf_logging.py:115] global_step 4940: box_loss 2.1367 , class_loss 5.4621 (1.59 sec/step)
+I1109 19:37:00.127173 140651552429824 tf_logging.py:115] global_step 4960: box_loss 2.1262 , class_loss 5.6395 (1.88 sec/step)
+50.0
+1 4
+50.0 200.0
+284 238 284 242
+[ 0.68381551  0.57714301  0.00214297  0.00999999]
+16.666666666666668
+1 12
+16.666666666666668 200.0
+88 141 88 153
+[ 0.21218751  0.35458301  0.000625    0.0275    ]
+28.571428571428573
+1 7
+28.571428571428573 200.0
+234 181 234 188
+[ 0.56312501  0.444653    0.00125003  0.01501   ]
+9.523809523809524
+1 21
+9.523809523809524 200.0
+103 137 103 158
+[ 0.2484375   0.35506551  0.000625    0.04971901]
+22.22222222222222
+1 9
+22.22222222222222 200.0
+100 99 100 108
+[ 0.2421875   0.24999999  0.00062501  0.023452  ]
+33.333333333333336
+6 1
+200.0 33.333333333333336
+301 234 307 234
+[ 0.73250002  0.56291649  0.01499999  0.00083297]
+50.0
+1 4
+50.0 200.0
+411 88 411 92
+[  9.88769501e-01   2.16912001e-01   9.76979733e-04   1.02939904e-02]
+66.66666666666667
+1 3
+66.66666666666667 200.0
+67 142 67 145
+[ 0.16218749  0.34625     0.000625    0.00749999]
+66.66666666666667
+1 3
+66.66666666666667 200.0
+82 143 82 146
+[ 0.19875     0.34839951  0.00125     0.00753298]
+200.0
+1 1
+200.0 200.0
+197 158 197 159
+[ 0.47437499  0.3816665   0.00125     0.00166699]
+66.66666666666667
+3 1
+200.0 66.66666666666667
+202 208 205 208
+[ 0.490723    0.50082251  0.00683603  0.00164503]
+20.0
+1 10
+20.0 200.0
+357 176 357 186
+[ 0.85897449  0.436709    0.00150901  0.02350798]
+33.333333333333336
+1 6
+33.333333333333336 200.0
+267 318 267 324
+[ 0.64296851  0.772917    0.00156301  0.01249999]
+33.333333333333336
+1 6
+33.333333333333336 200.0
+135 260 135 266
+[ 0.32625     0.63249999  0.00125     0.01499999]
+16.666666666666668
+1 12
+16.666666666666668 200.0
+101 96 101 108
+[ 0.24468751  0.2471855   0.000625    0.02908099]
+100.0
+1 2
+100.0 200.0
+232 133 232 135
+[ 0.5596875   0.32364     0.00062501  0.00562802]
+14.285714285714286
+1 14
+14.285714285714286 200.0
+251 200 251 214
+[ 0.6040625   0.49791649  0.00062501  0.03416699]
+200.0
+1 1
+200.0 200.0
+263 243 263 243
+[  6.32812500e-01   5.84650517e-01   6.25014305e-04   6.58988953e-04]
+66.66666666666667
+3 1
+200.0 66.66666666666667
+282 204 285 204
+[ 0.68281248  0.49166651  0.00812501  0.00166699]
+66.66666666666667
+1 3
+66.66666666666667 200.0
+228 208 228 211
+[ 0.549375    0.5046905   0.00125003  0.005629  ]
+100.0
+1 2
+100.0 200.0
+269 76 269 78
+[ 0.64812499  0.187148    0.00125003  0.00469001]
+15.384615384615385
+1 13
+15.384615384615385 200.0
+406 269 406 282
+[  9.77187514e-01   6.63749993e-01   6.25014305e-04   3.08339596e-02]
+200.0
+1 1
+200.0 200.0
+218 219 218 219
+[ 0.5246875   0.52767399  0.00062495  0.000938  ]
+66.66666666666667
+3 1
+200.0 66.66666666666667
+238 222 241 222
+[ 0.57624999  0.535       0.00749999  0.00166601]
+6.896551724137931
+1 29
+6.896551724137931 200.0
+247 326 247 355
+[  5.94062507e-01   8.19887489e-01   6.25014305e-04   6.94189668e-02]
+6.0606060606060606
+1 33
+6.0606060606060606 200.0
+261 195 261 228
+[  6.27812505e-01   5.09583503e-01   6.25014305e-04   8.08330178e-02]
+3.6363636363636362
+1 55
+3.6363636363636362 200.0
+324 243 324 298
+[  7.79687494e-01   6.51032001e-01   6.24954700e-04   1.33207977e-01]
+50.0
+1 4
+50.0 200.0
+147 181 147 185
+[ 0.35400401  0.4408755   0.000976    0.00875902]
+18.181818181818183
+1 11
+18.181818181818183 200.00000000000003
+2 227 2 238
+[ 0.005625    0.55956852  0.00125     0.02532899]
+200.0
+1 1
+200.0 200.0
+99 222 100 222
+[ 0.2404165   0.5353125   0.00416701  0.00062495]
+8.0
+25 1
+200.0 8.0
+148 0 173 0
+[ 0.3865625   0.0008335   0.05937499  0.001667  ]
+50.0
+4 1
+200.0 50.0
+293 249 297 249
+[ 0.71062499  0.599666    0.00874996  0.00166798]
+66.66666666666667
+3 1
+200.0 66.66666666666667
+89 183 92 183
+[ 0.218125    0.4409005   0.00749999  0.00187701]
+33.333333333333336
+1 6
+33.333333333333336 200.0
+257 198 257 204
+[ 0.61875001  0.4845935   0.00124997  0.01493898]
+100.0
+1 2
+100.0 200.0
+369 337 369 339
+[ 0.88828149  0.81406251  0.00156301  0.00624901]
+200.0
+1 1
+200.0 200.0
+147 271 147 272
+[  3.55066001e-01   6.54062510e-01   9.37998295e-04   6.25014305e-04]
+200.0
+1 1
+200.0 200.0
+272 100 272 101
+[  6.54583484e-01   2.42812507e-01   8.32974911e-04   6.24999404e-04]
+50.0
+4 1
+200.0 50.0
+71 200 75 200
+[ 0.1765625   0.48166649  0.00937501  0.00166699]
+25.0
+1 8
+25.0 200.0
+291 152 291 160
+[ 0.70066649  0.376       0.001333    0.01799998]
+25.0
+1 8
+25.0 200.0
+150 249 150 257
+[ 0.36176451  0.609236    0.00117698  0.01776195]
+40.0
+1 5
+40.0 200.0
+334 352 334 357
+[ 0.80375001  0.8538205   0.00124997  0.01328897]
+200.0
+1 1
+200.0 200.0
+62 172 62 173
+[ 0.15062501  0.4161955   0.00125     0.001883  ]
+33.333333333333336
+1 6
+33.333333333333336 200.0
+129 122 129 128
+[ 0.31093749  0.30125001  0.00062501  0.014166  ]
+50.0
+1 4
+50.0 200.0
+94 264 94 268
+[ 0.2275      0.64031252  0.00166599  0.00812501]
+18.181818181818183
+1 11
+18.181818181818183 200.00000000000003
+17 286 17 297
+[  4.15885001e-02   7.02261478e-01   6.24999404e-04   2.59630084e-02]
+100.0
+1 2
+100.0 200.0
+170 308 170 310
+[ 0.41000001  0.74333298  0.00125     0.005     ]
+2.380952380952381
+1 84
+2.380952380952381 200.0
+415 128 415 212
+[  9.99062479e-01   4.09943491e-01   6.25014305e-04   2.00751007e-01]
+200.0
+1 1
+200.0 200.0
+45 325 45 325
+[  1.09375000e-01   7.82855004e-01   1.24999881e-03   7.55965710e-04]
+200.0
+1 1
+200.0 200.0
+163 207 163 208
+[ 0.39218751  0.499532    0.00062501  0.000936  ]
+100.0
+1 2
+100.0 200.0
+278 140 278 142
+[ 0.669375    0.339587    0.00125003  0.00375199]
+200.0
+1 1
+200.0 200.0
+336 10 336 11
+[ 0.80875     0.0266665   0.00124997  0.003333  ]
+100.0
+1 2
+100.0 200.0
+283 212 283 214
+[ 0.68125001  0.5134635   0.00124997  0.00557101]
+18.181818181818183
+1 11
+18.181818181818183 200.00000000000003
+287 301 287 312
+[ 0.69062501  0.73875001  0.00125003  0.02583402]
+33.333333333333336
+1 6
+33.333333333333336 200.0
+231 234 231 240
+[ 0.55625001  0.57129452  0.00124997  0.01313299]
+0.6289308176100629
+1 318
+0.6289308176100629 200.0
+0 0 0 318
+[  6.94499991e-04   3.83333504e-01   1.38899998e-03   7.66667008e-01]
+Traceback (most recent call last):
+  File "./train.py", line 17, in <module>
+    app.run(main)
+  File "/home/gasmallah/anaconda3/lib/python3.6/site-packages/absl/app.py", line 300, in run
+    _run_main(main, args)
+  File "/home/gasmallah/anaconda3/lib/python3.6/site-packages/absl/app.py", line 251, in _run_main
+    sys.exit(main(argv))
+  File "./train.py", line 12, in main
+    cr.train()
+  File "/home/gasmallah/pipeline/resnet/detector.py", line 221, in train
+    class_imgs = self.prep_class_images(images,attention,boxes) 
+  File "/home/gasmallah/pipeline/resnet/detector.py", line 358, in prep_class_images
+    c_img = cv2.copyMakeBorder(c_img, top,bottom,left,right,cv2.BORDER_CONSTANT,value=color)
+cv2.error: OpenCV(3.4.3) /io/opencv/modules/core/src/copy.cpp:1179: error: (-215:Assertion failed) top >= 0 && bottom >= 0 && left >= 0 && right >= 0 in function 'copyMakeBorder'
+
