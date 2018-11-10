@@ -1,0 +1,53 @@
+I1109 10:52:47.232975 47682371667200 tf_logging.py:115] Dataset is Ready!
+I1109 10:52:47.235220 47682371667200 tf_logging.py:115] Initializing box net
+I1109 10:52:52.063167 47682371667200 tf_logging.py:115] Done with box net
+I1109 10:52:52.063363 47682371667200 tf_logging.py:115] Creating loss for box net
+I1109 10:52:52.109495 47682371667200 tf_logging.py:115] Box net loss done
+I1109 10:53:00.756248 47682371667200 tf_logging.py:115] Box net optimizer initialized
+I1109 10:53:00.866558 47682371667200 tf_logging.py:115] Box net summaries merged
+I1109 10:53:00.866679 47682371667200 tf_logging.py:115] Beginning classifier initialization
+I1109 10:53:05.727556 47682371667200 tf_logging.py:115] Classifier initialization done
+I1109 10:53:14.703973 47682371667200 tf_logging.py:115] Classifier optimizer created
+I1109 10:53:14.802662 47682371667200 tf_logging.py:115] Classifier summaries merged
+2018-11-09 10:53:16.787927: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1411] Found device 0 with properties: 
+name: Tesla P100-PCIE-12GB major: 6 minor: 0 memoryClockRate(GHz): 1.3285
+pciBusID: 0000:04:00.0
+totalMemory: 11.91GiB freeMemory: 11.63GiB
+2018-11-09 10:53:16.966262: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1411] Found device 1 with properties: 
+name: Tesla P100-PCIE-12GB major: 6 minor: 0 memoryClockRate(GHz): 1.3285
+pciBusID: 0000:83:00.0
+totalMemory: 11.91GiB freeMemory: 11.63GiB
+2018-11-09 10:53:16.966345: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1490] Adding visible gpu devices: 0, 1
+2018-11-09 10:53:18.983399: I tensorflow/core/common_runtime/gpu/gpu_device.cc:971] Device interconnect StreamExecutor with strength 1 edge matrix:
+2018-11-09 10:53:18.983465: I tensorflow/core/common_runtime/gpu/gpu_device.cc:977]      0 1 
+2018-11-09 10:53:18.983477: I tensorflow/core/common_runtime/gpu/gpu_device.cc:990] 0:   N N 
+2018-11-09 10:53:18.983492: I tensorflow/core/common_runtime/gpu/gpu_device.cc:990] 1:   N N 
+2018-11-09 10:53:18.984043: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1103] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 11249 MB memory) -> physical GPU (device: 0, name: Tesla P100-PCIE-12GB, pci bus id: 0000:04:00.0, compute capability: 6.0)
+2018-11-09 10:53:18.984730: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1103] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:1 with 11249 MB memory) -> physical GPU (device: 1, name: Tesla P100-PCIE-12GB, pci bus id: 0000:83:00.0, compute capability: 6.0)
+2018-11-09 10:53:18.985560: I tensorflow/core/common_runtime/process_util.cc:69] Creating new thread pool with default inter op setting: 2. Tune using inter_op_parallelism_threads for best performance.
+I1109 10:53:25.787499 47682371667200 tf_logging.py:115] Initial variables have been initialized
+2018-11-09 10:54:19.655927: W tensorflow/core/common_runtime/bfc_allocator.cc:215] Allocator (GPU_0_bfc) ran out of memory trying to allocate 1.20GiB. The caller indicates that this is not a failure, but may mean that there could be performance gains if more memory were available.
+2018-11-09 10:54:19.739375: W tensorflow/core/common_runtime/bfc_allocator.cc:215] Allocator (GPU_0_bfc) ran out of memory trying to allocate 2.43GiB. The caller indicates that this is not a failure, but may mean that there could be performance gains if more memory were available.
+2018-11-09 10:54:19.802728: W tensorflow/core/common_runtime/bfc_allocator.cc:215] Allocator (GPU_0_bfc) ran out of memory trying to allocate 2.32GiB. The caller indicates that this is not a failure, but may mean that there could be performance gains if more memory were available.
+2018-11-09 10:54:19.867544: W tensorflow/core/common_runtime/bfc_allocator.cc:215] Allocator (GPU_0_bfc) ran out of memory trying to allocate 2.26GiB. The caller indicates that this is not a failure, but may mean that there could be performance gains if more memory were available.
+2018-11-09 10:54:19.930166: W tensorflow/core/common_runtime/bfc_allocator.cc:215] Allocator (GPU_0_bfc) ran out of memory trying to allocate 621.00MiB. The caller indicates that this is not a failure, but may mean that there could be performance gains if more memory were available.
+2018-11-09 10:54:19.930221: W tensorflow/core/common_runtime/bfc_allocator.cc:215] Allocator (GPU_0_bfc) ran out of memory trying to allocate 1.20GiB. The caller indicates that this is not a failure, but may mean that there could be performance gains if more memory were available.
+I1109 10:54:39.168105 47682371667200 tf_logging.py:115] global_step 0: box_loss 105.1847 , class_loss 9.5556 (12.66 sec/step)
+Traceback (most recent call last):
+  File "./train.py", line 17, in <module>
+    app.run(main)
+  File "/home/mhg1/.local/lib/python3.5/site-packages/absl/app.py", line 300, in run
+    _run_main(main, args)
+  File "/home/mhg1/.local/lib/python3.5/site-packages/absl/app.py", line 251, in _run_main
+    sys.exit(main(argv))
+  File "./train.py", line 12, in main
+    cr.train()
+  File "/home/mhg1/pipeline/resnet/detector.py", line 221, in train
+    class_imgs = self.prep_class_images(images,attention,boxes) 
+  File "/home/mhg1/pipeline/resnet/detector.py", line 336, in prep_class_images
+    scale_factor_w = 200.0/float(w)
+ZeroDivisionError: float division by zero
+
+real	3m10.501s
+user	2m29.126s
+sys	0m12.582s

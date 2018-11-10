@@ -8,7 +8,6 @@ from tqdm import tqdm
 from .tfrecord_utils import input_fn, _identity, generator_masks, get_instance
 import pickle
 import time
-from prefetch_generator import background
 
 def pickle_load(filename):
     return pickle.load(open(filename,"rb"))
@@ -119,20 +118,12 @@ class Data:
         return _generator
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    def load_hierarchy(self,location):
+        import json
+        from .hierarchical import Tree, Node
+        with open(location) as f:
+            hierarchy_dict = json.load(f)
+        self.hierarchy = Tree(hierarchy_dict)
 
 
 
